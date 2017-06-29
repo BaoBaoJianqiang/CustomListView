@@ -1,6 +1,7 @@
 package com.example.jianqiang.testlistview;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -74,7 +75,7 @@ public class MyAdapter extends BaseAdapter {
         holder.tvAuthor.setText(news.author);
         holder.tvContent.setText(news.content);
         holder.tvTime.setText(news.showtime);
-
+        holder.imgAvator.setImageURI(Uri.parse(news.avator));
         //点赞
         if (news.preferList != null) {
             holder.llPrefer.setVisibility(View.VISIBLE);
@@ -85,7 +86,6 @@ public class MyAdapter extends BaseAdapter {
             }
 
             sb.deleteCharAt(sb.length() - 1);
-
             holder.tvPreferUserList.setText(sb.toString());
         } else {
             holder.llPrefer.setVisibility(View.GONE);
