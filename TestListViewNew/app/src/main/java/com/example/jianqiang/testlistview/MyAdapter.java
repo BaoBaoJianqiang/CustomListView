@@ -34,10 +34,10 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware{
 
     public void updateDataset(@NonNull List<News> newsList, boolean isAppend)
     {
-        itemViewFactory.reset();
-
         if(this.newsList == null)
         {
+            itemViewFactory.reset();
+
             this.newsList = newsList;
 
             notifyDataSetChanged();
@@ -51,6 +51,8 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware{
         }
         else
         {
+            itemViewFactory.reset();
+
             this.newsList = newsList;
         }
 
@@ -89,5 +91,11 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware{
     public void setScrolling(boolean isScrolling)
     {
         this.isScrolling = isScrolling;
+    }
+
+    @Override
+    public void destroy()
+    {
+        itemViewFactory.reset();
     }
 }
