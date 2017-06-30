@@ -1,36 +1,34 @@
 package com.example.jianqiang.testlistview;
 
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewStub;
-import android.widget.Adapter;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import com.facebook.drawee.view.SimpleDraweeView;
+import com.example.jianqiang.testlistview.awares.ItemViewAware;
+import com.example.jianqiang.testlistview.awares.ItemViewFactoryAware;
+import com.example.jianqiang.testlistview.awares.ListAdapterAware;
+import com.example.jianqiang.testlistview.helpers.DefaultItemViewFactoryAware;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class MyAdapter extends BaseAdapter {
+public class MyAdapter extends BaseAdapter implements ListAdapterAware{
     private final List<News> newsList;
     private final Activity context;
+    private ItemViewFactoryAware<News> itemViewFactory;
+    private boolean isScrolling;
 
-    public MyAdapter(Activity context, List<News> newsList) {
+    public MyAdapter(Activity context, List<News> newsList)
+    {
+        this(context, newsList, null);
+    }
+
+    public MyAdapter(Activity context, List<News> newsList, ItemViewFactoryAware<News> itemViewFactory) {
         super();
 
         this.newsList = newsList;
         this.context = context;
+        this.itemViewFactory = itemViewFactory == null ? new DefaultItemViewFactoryAware() : itemViewFactory;
     }
 
     @Override
@@ -51,20 +49,19 @@ public class MyAdapter extends BaseAdapter {
     public View getView(final int position, View convertView,
                         final ViewGroup parent) {
 
-        MyView1 myView = new MyView1(parent.getContext());
+        View itemView = itemViewFactory.obtainItemView(parent.getContext(), newsList.get(position), String.valueOf(position));
 
-        //提前计算行高
-        News news = newsList.get(position);
-        int height = 300;
-        if(news.preferList != null)
-            height += 40;
-        if(news.commentList != null) {
-            height += news.commentList.size() * 40;
+        if((itemView instanceof ItemViewAware) && !isScrolling)
+        {
+            ((ItemViewAware) itemView).triggerNetworkJob();
         }
 
-        myView.setData(news, 1200, height);
-        convertView = myView;
+        return itemView;
+    }
 
-        return convertView;
+    @Override
+    public void setScrolling(boolean isScrolling)
+    {
+        this.isScrolling = isScrolling;
     }
 }

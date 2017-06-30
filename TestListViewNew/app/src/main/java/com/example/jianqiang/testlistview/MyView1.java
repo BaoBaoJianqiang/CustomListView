@@ -7,10 +7,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.view.View;
 
-public class MyView1 extends View {
+import com.example.jianqiang.testlistview.awares.ItemViewAware;
+
+public class MyView1 extends View implements ItemViewAware<News>
+{
     int width;
     int height;
 
@@ -33,7 +35,9 @@ public class MyView1 extends View {
         imgDefault = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
     }
 
+    @Override
     public void setData(News news, int width, int height) {
+
         this.news = news;
 
         this.width = width;
@@ -41,8 +45,15 @@ public class MyView1 extends View {
     }
 
     @Override
+    public void triggerNetworkJob()
+    {
+        //TODO do network job here
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
         setMeasuredDimension(width, height);
     }
 

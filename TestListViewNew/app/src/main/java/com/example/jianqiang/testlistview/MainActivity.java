@@ -1,14 +1,11 @@
 package com.example.jianqiang.testlistview;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.ListView;
+import android.support.v7.app.AppCompatActivity;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class MainActivity extends AppCompatActivity {
-    ListView listView;
+public class MainActivity extends AppCompatActivity
+{
+    MyListView listView;
     MyAdapter adapter;
 
     @Override
@@ -17,9 +14,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        listView = (ListView) findViewById(R.id.mylist);
+        listView = (MyListView) findViewById(R.id.mylist);
 
         adapter = new MyAdapter(this, Utils.generateData());
+
         listView.setAdapter(adapter);
     }
 }
