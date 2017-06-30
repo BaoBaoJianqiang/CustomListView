@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="common_text_size_small">12dp</dimen>
+    <dimen name="common_text_size_medium">14dp</dimen>
+    <dimen name="common_text_size_large">16dp</dimen>
+    <dimen name="common_text_size_xlarge">18dp</dimen>
+    <dimen name="common_button_height">48dp</dimen>
+    <dimen name="common_divider_height">1dp</dimen>
+
+</resources>
