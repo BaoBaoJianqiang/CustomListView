@@ -1,29 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fresco="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:fresco="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal">
 
     <com.facebook.drawee.view.SimpleDraweeView
         android:id="@+id/imgAvator"
-        android:layout_width="100px"
-        android:layout_height="100px"
-        fresco:placeholderImage="@mipmap/ic_launcher_round" />
-        />
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        fresco:placeholderImage="@mipmap/ic_launcher"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="10dp"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/tvAuthor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="tvAuthor" />
+            android:text="tvAuthor"
+            android:textColor="@android:color/holo_blue_dark"
+            android:textSize="13sp"/>
 
         <TextView
             android:id="@+id/tvContent"
@@ -31,33 +36,36 @@
             android:layout_height="wrap_content"
             android:text="Display"
             android:textAlignment="viewStart"
-            tools:text="dscdscdscdsdscdscdscdsdscdscdscdsdscdscdscdsdscdscdscdsdscdscdscdsdscdscdscds" />
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            tools:text="dscdscdscdsdscdscdscdsdscdscdscdsdscdscdscdsdscdscdscdsdscdscdscdsdscdscdscds"/>
 
         <TextView
             android:id="@+id/tvTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-             />
+            />
 
         <LinearLayout
             android:id="@+id/llPrefer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/imgZan"
                 android:layout_width="17dp"
                 android:layout_height="17dp"
                 android:adjustViewBounds="false"
-                android:background="@drawable/zan" />
+                android:background="@drawable/zan"/>
 
             <TextView
                 android:id="@+id/tvPreferUserList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="tvPreferUserList" />
+                android:text="tvPreferUserList"/>
 
         </LinearLayout>
 
@@ -65,8 +73,8 @@
             android:id="@+id/llComments"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAlignment="viewStart"
-            android:orientation="vertical" />
+            android:orientation="vertical"
+            android:textAlignment="viewStart"/>
 
     </LinearLayout>
 
