@@ -9,7 +9,7 @@ import android.widget.BaseAdapter;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ItemViewFactoryAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
-import com.example.jianqiang.testlistview.helpers.DefaultItemViewFactoryAware;
+import com.example.jianqiang.testlistview.helpers.DefaultItemViewFactory;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware{
 
         this.newsList = newsList;
         this.context = context;
-        this.itemViewFactory = itemViewFactory == null ? new DefaultItemViewFactoryAware() : itemViewFactory;
+        this.itemViewFactory = itemViewFactory == null ? new DefaultItemViewFactory() : itemViewFactory;
     }
 
     public void updateDataset(@NonNull List<News> newsList, boolean isAppend)

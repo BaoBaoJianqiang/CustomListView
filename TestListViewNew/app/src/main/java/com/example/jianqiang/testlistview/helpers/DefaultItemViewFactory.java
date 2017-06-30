@@ -13,11 +13,11 @@ import com.example.jianqiang.testlistview.awares.ItemViewFactoryAware;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 
-public class DefaultItemViewFactoryAware implements ItemViewFactoryAware<News>
+public class DefaultItemViewFactory implements ItemViewFactoryAware<News>
 {
     private ArrayMap<String, ItemViewAware<News>> mCachedViewList;
 
-    public DefaultItemViewFactoryAware()
+    public DefaultItemViewFactory()
     {
         mCachedViewList = new ArrayMap<>();
     }
