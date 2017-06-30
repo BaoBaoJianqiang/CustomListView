@@ -17,7 +17,6 @@ public class Utils {
         newsList.add(genNew8());
         newsList.add(genNew9());
 
-
         return newsList;
     }
 
