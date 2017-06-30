@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.view.View;
 
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
+import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 
 public class MyView1 extends View implements ItemViewAware<News>
 {
@@ -36,12 +37,16 @@ public class MyView1 extends View implements ItemViewAware<News>
     }
 
     @Override
-    public void setData(News news, int width, int height) {
+    public void setData(News news, ItemViewLayoutConfig layoutConfig) {
+
+        if(layoutConfig == null) return;
 
         this.news = news;
 
-        this.width = width;
-        this.height = height;
+        this.width = layoutConfig.getWidth();
+        this.height = layoutConfig.getHeight();
+
+        //TODO read other custom values
     }
 
     @Override

@@ -7,8 +7,10 @@ import android.view.View;
 
 import com.example.jianqiang.testlistview.MyView1;
 import com.example.jianqiang.testlistview.News;
+import com.example.jianqiang.testlistview.R;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ItemViewFactoryAware;
+import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig.ConfigBuilder;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -43,7 +45,7 @@ public class DefaultItemViewFactory implements ItemViewFactoryAware<News>
             height += news.commentList.size() * 40;
         }
 
-        convertView.setData(news, MATCH_PARENT, height);
+        convertView.setData(news, createLayoutConfig(context, height, MATCH_PARENT));
 
         mCachedViewList.put(tag, convertView);
 
@@ -54,5 +56,12 @@ public class DefaultItemViewFactory implements ItemViewFactoryAware<News>
     public void reset()
     {
         mCachedViewList.clear();
+    }
+
+    private ItemViewLayoutConfig createLayoutConfig(Context context, int height, int width)
+    {
+        return (new ConfigBuilder(context, height, width))
+                .primaryTextColor(context.getResources().getColor(R.color.colorPrimary))
+                .build();
     }
 }
