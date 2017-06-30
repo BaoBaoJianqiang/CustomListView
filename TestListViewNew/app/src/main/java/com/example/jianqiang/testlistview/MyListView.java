@@ -72,4 +72,15 @@ public class MyListView extends ListView
             }
         });
     }
+
+    @Override
+    protected void onDetachedFromWindow()
+    {
+        super.onDetachedFromWindow();
+
+        if(getAdapter() instanceof ListAdapterAware)
+        {
+            ((ListAdapterAware) getAdapter()).destroy();
+        }
+    }
 }
