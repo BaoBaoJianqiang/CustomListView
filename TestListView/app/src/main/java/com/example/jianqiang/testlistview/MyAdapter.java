@@ -76,7 +76,8 @@ public class MyAdapter extends BaseAdapter {
         holder.tvContent.setText(news.content);
         holder.tvTime.setText(news.showtime);
         holder.imgAvator.setImageURI(Uri.parse(news.avator));
-        
+
+      
         //点赞
         if (news.preferList != null) {
             holder.llPrefer.setVisibility(View.VISIBLE);
