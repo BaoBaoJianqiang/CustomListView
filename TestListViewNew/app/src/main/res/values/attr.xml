@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MyView1">
+        <attr name="line_height" format="dimension"/>
+        <attr name="name_size" format="dimension"/>
+        <attr name="content_size" format="dimension"/>
+        <attr name="image_width" format="dimension"/>
+        <attr name="left_padding" format="dimension"/>
+    </declare-styleable>
+</resources>
