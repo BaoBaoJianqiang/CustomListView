@@ -1,6 +1,7 @@
 package com.example.jianqiang.testlistview;
 
 import android.app.Activity;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -13,7 +14,7 @@ import com.example.jianqiang.testlistview.helpers.DefaultItemViewFactoryAware;
 import java.util.List;
 
 public class MyAdapter extends BaseAdapter implements ListAdapterAware{
-    private final List<News> newsList;
+    private List<News> newsList;
     private final Activity context;
     private ItemViewFactoryAware<News> itemViewFactory;
     private boolean isScrolling;
@@ -29,6 +30,31 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware{
         this.newsList = newsList;
         this.context = context;
         this.itemViewFactory = itemViewFactory == null ? new DefaultItemViewFactoryAware() : itemViewFactory;
+    }
+
+    public void updateDataset(@NonNull List<News> newsList, boolean isAppend)
+    {
+        itemViewFactory.reset();
+
+        if(this.newsList == null)
+        {
+            this.newsList = newsList;
+
+            notifyDataSetChanged();
+
+            return;
+        }
+
+        if(isAppend)
+        {
+            this.newsList.addAll(newsList);
+        }
+        else
+        {
+            this.newsList = newsList;
+        }
+
+        notifyDataSetChanged();
     }
 
     @Override
