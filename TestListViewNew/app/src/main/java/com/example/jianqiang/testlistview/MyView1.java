@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.view.View;
 
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
+import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 
 public class MyView1 extends View implements ItemViewAware<News>
@@ -50,10 +51,16 @@ public class MyView1 extends View implements ItemViewAware<News>
     }
 
     @Override
-    public void triggerNetworkJob()
+    public boolean triggerNetworkJob(ListAdapterAware adapter, int position)
     {
         //TODO do network job here
+        //TODO After success of the network call
+        adapter.updateItemView(position);
+        System.out.println("lip triggerNetworkJob updateView"+position);
+        return true;
     }
+
+
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -115,6 +122,8 @@ public class MyView1 extends View implements ItemViewAware<News>
                         paint);
             }
         }
+
+        //图片加载
 
     }
 

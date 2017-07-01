@@ -6,5 +6,6 @@ public interface ItemViewAware<T>
 {
     void setData(T item, ItemViewLayoutConfig layoutConfig);
 
-    void triggerNetworkJob();
+    boolean triggerNetworkJob(ListAdapterAware adapter, int position);
+
 }

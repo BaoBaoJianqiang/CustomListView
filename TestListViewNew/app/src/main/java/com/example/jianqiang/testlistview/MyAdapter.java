@@ -13,29 +13,28 @@ import com.example.jianqiang.testlistview.helpers.DefaultItemViewFactory;
 
 import java.util.List;
 
-public class MyAdapter extends BaseAdapter implements ListAdapterAware{
+public class MyAdapter extends BaseAdapter implements ListAdapterAware {
     private List<News> newsList;
-    private final Activity context;
+    private Activity context;
     private ItemViewFactoryAware<News> itemViewFactory;
     private boolean isScrolling;
+    private MyListView mMyListView;
 
-    public MyAdapter(Activity context, List<News> newsList)
-    {
-        this(context, newsList, null);
+    public MyAdapter(Activity context, List<News> newsList) {
+        this(context, newsList, null, null);
     }
 
-    public MyAdapter(Activity context, List<News> newsList, ItemViewFactoryAware<News> itemViewFactory) {
+    public MyAdapter(Activity context, List<News> newsList, ItemViewFactoryAware<News> itemViewFactory, MyListView listView) {
         super();
 
         this.newsList = newsList;
         this.context = context;
         this.itemViewFactory = itemViewFactory == null ? new DefaultItemViewFactory() : itemViewFactory;
+        this.mMyListView = listView;
     }
 
-    public void updateDataset(@NonNull List<News> newsList, boolean isAppend)
-    {
-        if(this.newsList == null)
-        {
+    public void updateDataset(@NonNull List<News> newsList, boolean isAppend) {
+        if (this.newsList == null) {
             itemViewFactory.reset();
 
             this.newsList = newsList;
@@ -45,12 +44,9 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware{
             return;
         }
 
-        if(isAppend)
-        {
+        if (isAppend) {
             this.newsList.addAll(newsList);
-        }
-        else
-        {
+        } else {
             itemViewFactory.reset();
 
             this.newsList = newsList;
@@ -76,26 +72,49 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware{
 
     public View getView(final int position, View convertView,
                         final ViewGroup parent) {
+        convertView = itemViewFactory.obtainItemView(parent.getContext(), newsList.get(position), String.valueOf(position));
 
-        View itemView = itemViewFactory.obtainItemView(parent.getContext(), newsList.get(position), String.valueOf(position));
-
-        if((itemView instanceof ItemViewAware) && !isScrolling)
-        {
-            ((ItemViewAware) itemView).triggerNetworkJob();
+        if ((convertView instanceof ItemViewAware) && !isScrolling) {
+            ((ItemViewAware) convertView).triggerNetworkJob(this, position);
         }
 
-        return itemView;
+
+        return convertView;
     }
 
+
     @Override
-    public void setScrolling(boolean isScrolling)
-    {
+    public void setScrolling(boolean isScrolling) {
         this.isScrolling = isScrolling;
     }
 
     @Override
-    public void destroy()
-    {
+    public void destroy() {
         itemViewFactory.reset();
     }
+
+    @Override
+    public void updateItemView(int position) {
+        if (mMyListView == null) {
+            new IllegalStateException("listview can't be empty");
+            return;
+        }
+        int firstVisiblePosition = mMyListView.getFirstVisiblePosition();
+
+        int lastVisiblePosition = mMyListView.getLastVisiblePosition();
+
+        if (position >= firstVisiblePosition && position <= lastVisiblePosition) {
+
+            View view = mMyListView.getChildAt(position - firstVisiblePosition);
+
+            mMyListView.getAdapter().getView(position, view, mMyListView);
+        }
+        if (position == lastVisiblePosition) {
+            return;
+
+        }
+
+
+    }
+
 }
