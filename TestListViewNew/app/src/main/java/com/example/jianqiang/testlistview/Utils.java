@@ -26,6 +26,18 @@ public class Utils {
         return newsList;
     }
 
+    /**
+     *
+    *  @param content The text strings that need to be drawn
+     * @param contentWidth The width of the text area
+     * @param left The distance between the text area's left side to its parent's left side
+     * @param top  The distance between the text area's top side to its parent's top side
+     * @return An instance of the StaticLayout class, which created by the input params.
+     *         The finally generated line count can be fetched by invoking staticLayout.getLineCount();
+     * e.g.
+     *    StaticLayout staticLayout = innerDrawText(canvas, textPaint, news.content, 1000, imgDefault.getWidth() + 10, titleSize + 10);
+     *    int lineCount = staticLayout.getLineCount();
+    */
     private static StaticLayout smartDrawText(@NonNull Canvas canvas, @NonNull TextPaint paint, String content, int contentWidth, float left, float top)
     {
         StaticLayout staticLayout = new StaticLayout(content, paint, contentWidth, Alignment.ALIGN_NORMAL, 1f, 0f, true);
