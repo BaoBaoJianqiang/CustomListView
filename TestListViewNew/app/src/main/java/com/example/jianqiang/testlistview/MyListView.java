@@ -2,6 +2,7 @@ package com.example.jianqiang.testlistview;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
@@ -12,6 +13,8 @@ import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 
 public class MyListView extends ListView
 {
+    private SparseArray<View> mArrayList;
+
     public MyListView(Context context)
     {
         super(context);
@@ -42,6 +45,7 @@ public class MyListView extends ListView
 
     private void init()
     {
+        mArrayList = new SparseArray<>();
         this.setOnScrollListener(new OnScrollListener()
         {
             @Override
@@ -53,13 +57,19 @@ public class MyListView extends ListView
 
                 if(scrollState == SCROLL_STATE_IDLE)
                 {
-                    for(int i = 0; i < view.getChildCount(); i++)
+
+                    for(int i = 0; i < mArrayList.size(); i++)
                     {
+
                         View itemView = view.getChildAt(i);
+                        mArrayList.put(i,view);
 
                         if(itemView instanceof ItemViewAware)
                         {
-                            ((ItemViewAware) itemView).triggerNetworkJob();
+                            boolean  loadSuccess= ((ItemViewAware) itemView).triggerNetworkJob((ListAdapterAware) getAdapter(),i);
+                            if (loadSuccess){
+                                mArrayList.remove(i);
+                            }
                         }
                     }
                 }
@@ -83,4 +93,14 @@ public class MyListView extends ListView
             ((ListAdapterAware) getAdapter()).destroy();
         }
     }
+
+    //For outside calls
+    public void updateItem(int position) {
+        if(getAdapter() instanceof ListAdapterAware)
+        {
+            ((ListAdapterAware) getAdapter()).updateItemView(position);
+        }
+
+    }
+
 }
