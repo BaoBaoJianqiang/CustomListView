@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.text.TextPaint;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -22,6 +23,7 @@ public class MyView1 extends View implements ItemViewAware<News>
     int height;
 
     Paint paint;
+    TextPaint textPaint;
 
     int titleSize = 40;
     int dispSize = 40;
@@ -37,6 +39,8 @@ public class MyView1 extends View implements ItemViewAware<News>
         super(context);
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(Color.BLACK);
+        textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(Color.BLACK);
         mContext = context;
         zanImg = BitmapFactory.decodeResource(context.getResources(), R.drawable.zan);
         imgDefault = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
@@ -104,7 +108,7 @@ public class MyView1 extends View implements ItemViewAware<News>
         paint.setTextSize(titleSize);
         canvas.drawText(news.author, imgDefault.getWidth() + 10, topPos + 10, paint);
 
-        //内容
+//        //内容
         paint.setTextSize(dispSize);
         canvas.drawText(news.content, imgDefault.getWidth() + 10, topPos + titleSize + 20 + 10, paint);
 

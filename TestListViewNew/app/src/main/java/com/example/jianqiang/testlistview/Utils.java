@@ -1,5 +1,11 @@
 package com.example.jianqiang.testlistview;
 
+import android.graphics.Canvas;
+import android.support.annotation.NonNull;
+import android.text.Layout.Alignment;
+import android.text.StaticLayout;
+import android.text.TextPaint;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +24,21 @@ public class Utils {
         newsList.add(genNew9());
 
         return newsList;
+    }
+
+    private static StaticLayout smartDrawText(@NonNull Canvas canvas, @NonNull TextPaint paint, String content, int contentWidth, float left, float top)
+    {
+        StaticLayout staticLayout = new StaticLayout(content, paint, contentWidth, Alignment.ALIGN_NORMAL, 1f, 0f, true);
+
+        canvas.save();
+
+        canvas.translate(left, top);
+
+        staticLayout.draw(canvas);
+
+        canvas.restore();
+
+        return staticLayout;
     }
 
     static News genNew1() {
