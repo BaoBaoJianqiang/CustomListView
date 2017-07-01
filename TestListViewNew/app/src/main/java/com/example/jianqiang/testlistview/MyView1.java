@@ -7,8 +7,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.net.Uri;
 import android.view.View;
+import android.widget.ImageView;
 
+import com.example.jianqiang.testlistview.awares.IResultListener;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
@@ -27,14 +30,17 @@ public class MyView1 extends View implements ItemViewAware<News>
 
     Bitmap zanImg;
     Bitmap imgDefault;
+    ImageView mSimpleDraweeView;
+    Context mContext;
 
     public MyView1(Context context) {
         super(context);
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(Color.BLACK);
-
+        mContext = context;
         zanImg = BitmapFactory.decodeResource(context.getResources(), R.drawable.zan);
         imgDefault = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
+        mSimpleDraweeView = new ImageView(context);
     }
 
     @Override
@@ -51,12 +57,26 @@ public class MyView1 extends View implements ItemViewAware<News>
     }
 
     @Override
-    public boolean triggerNetworkJob(ListAdapterAware adapter, int position)
+    public boolean triggerNetworkJob(final ListAdapterAware adapter, final int position)
     {
+
+
         //TODO do network job here
+        Uri uri = Uri.parse(news.avator);
+        FrescoUtils.downloadBitmap(uri,mContext,new IResultListener() {
+            @Override
+            public void onSuccess(Bitmap bitmap) {
+                mSimpleDraweeView.setTag(bitmap);
+                invalidate();
+            }
+
+            @Override
+            public void onFail() {
+
+            }
+        });
         //TODO After success of the network call
-        adapter.updateItemView(position);
-        System.out.println("lip triggerNetworkJob updateView"+position);
+//
         return true;
     }
 
@@ -72,7 +92,11 @@ public class MyView1 extends View implements ItemViewAware<News>
     @Override
     protected void onDraw(Canvas canvas) {
 
-        canvas.drawBitmap(resizeBitmap(imgDefault, 0.5f), 10, 10, paint);
+        if (mSimpleDraweeView.getTag()!=null) {
+            canvas.drawBitmap((Bitmap) mSimpleDraweeView.getTag(), 10, 10, paint);
+        }else {
+            canvas.drawBitmap(resizeBitmap(imgDefault, 0.5f), 10, 10, paint);
+        }
 
         int topPos = 30;
 
@@ -123,7 +147,6 @@ public class MyView1 extends View implements ItemViewAware<News>
             }
         }
 
-        //图片加载
 
     }
 
