@@ -28,6 +28,7 @@ public class Utils {
 
         News news1 = new News();
         news1.author = "小鱼儿";
+//        news1.avator = "http://img3.imgtn.bdimg.com/it/u=3105304565,1509611228&fm=26&gp=0.jpg";
         news1.avator = "https://pic.cnblogs.com/face/313471/20141107134952.png";
         news1.content = "毕业蓝翔技校，技能搬运工！专门搜集生活中的实用小技能、小智慧，为您的生活提供更多帮助与便利。";
         news1.showtime = "1小时前";

@@ -51,25 +51,21 @@ public class MyListView extends ListView
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState)
             {
+
                 if(!(getAdapter() instanceof ListAdapterAware)) return;
 
                 ((ListAdapterAware) getAdapter()).setScrolling(scrollState != SCROLL_STATE_IDLE);
 
                 if(scrollState == SCROLL_STATE_IDLE)
                 {
-
-                    for(int i = 0; i < mArrayList.size(); i++)
+                    for(int i = 0; i < view.getChildCount(); i++)
                     {
 
                         View itemView = view.getChildAt(i);
-                        mArrayList.put(i,view);
 
                         if(itemView instanceof ItemViewAware)
                         {
                             boolean  loadSuccess= ((ItemViewAware) itemView).triggerNetworkJob((ListAdapterAware) getAdapter(),i);
-                            if (loadSuccess){
-                                mArrayList.remove(i);
-                            }
                         }
                     }
                 }
