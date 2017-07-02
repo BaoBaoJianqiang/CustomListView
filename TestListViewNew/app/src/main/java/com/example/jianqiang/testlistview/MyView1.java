@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.view.View;
 import android.widget.ImageView;
@@ -17,19 +18,18 @@ import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 
-public class MyView1 extends View implements ItemViewAware<News>
-{
-    int width;
-    int height;
+import static com.example.jianqiang.testlistview.Utils.smartDrawText;
 
+public class MyView1 extends View implements ItemViewAware<News> {
     Paint paint;
     TextPaint textPaint;
-
-    int titleSize = 40;
-    int dispSize = 40;
-
+    int margin = 30;
+    int nameSize = 30;
+    int titleSize = 32;
+    int textMargin = 10;
+    int imageMargin = 10;
+    int contentWidth = 560;
     News news;
-
     Bitmap zanImg;
     Bitmap imgDefault;
     ImageView mSimpleDraweeView;
@@ -38,46 +38,33 @@ public class MyView1 extends View implements ItemViewAware<News>
     public MyView1(Context context) {
         super(context);
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.BLACK);
         textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
         mContext = context;
-        zanImg = BitmapFactory.decodeResource(context.getResources(), R.drawable.zan);
-        imgDefault = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
+        zanImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.zan);
+        imgDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
         mSimpleDraweeView = new ImageView(context);
     }
 
     @Override
     public void setData(News news, ItemViewLayoutConfig layoutConfig) {
 
-        if(layoutConfig == null) return;
-
+        if (layoutConfig == null)
+            return;
         this.news = news;
-
-        this.width = layoutConfig.getWidth();
-        this.height = layoutConfig.getHeight();
 
         //TODO read other custom values
     }
 
     @Override
-    public boolean triggerNetworkJob(final ListAdapterAware adapter, final int position)
-    {
-
-
+    public boolean triggerNetworkJob(final ListAdapterAware adapter, final int position) {
         //TODO do network job here
         Uri uri = Uri.parse(news.avator);
-        FrescoUtils.downloadBitmap(uri,mContext,new IResultListener() {
+        FrescoUtils.downloadBitmap(uri, mContext, new IResultListener() {
             @Override
             public void onSuccess(Bitmap bitmap) {
                 mSimpleDraweeView.setTag(bitmap);
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        invalidate();
-                    }
-                });
-
+                invalidate();
             }
 
             @Override
@@ -91,69 +78,119 @@ public class MyView1 extends View implements ItemViewAware<News>
     }
 
 
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        setMeasuredDimension(measureWidth(widthMeasureSpec), getTotalHeight());
 
-        setMeasuredDimension(width, height);
     }
+
+    //获取测量宽度，同时设置文字的最大宽度
+    private int measureWidth(int widthMeasureSpec) {
+        int result = 0;
+        int specMode = MeasureSpec.getMode(widthMeasureSpec);
+        int specSize = MeasureSpec.getSize(widthMeasureSpec);//获取宽度
+        switch (specMode) {
+            case MeasureSpec.EXACTLY:
+            case MeasureSpec.AT_MOST:
+                result = specSize;
+                contentWidth = specSize - imgDefault.getWidth() / 2 - margin;
+                break;
+            case MeasureSpec.UNSPECIFIED:
+                break;
+        }
+        return result;
+    }
+
+    //获取总高度
+    public int getTotalHeight() {
+        int leftMargin = imgDefault.getWidth() / 2;//文字左边距
+        Canvas canvas = new Canvas();
+        int totalHeight = 0;
+        //人名的高度
+        textPaint.setTextSize(nameSize);
+        totalHeight += smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, totalHeight).getHeight();
+        //内容的高度
+        textPaint.setTextSize(titleSize);
+        totalHeight += Utils.smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, totalHeight).getHeight();
+        //发布时间的高度
+        textPaint.setTextSize(nameSize);
+        totalHeight += Utils.smartDrawText(canvas, textPaint, news.showtime, contentWidth, leftMargin, totalHeight).getHeight();
+        //点赞的高度
+        if (news.preferList != null) {
+            textPaint.setTextSize(nameSize);
+            textPaint.setColor(Color.BLUE);
+            totalHeight += Utils.smartDrawText(canvas, textPaint, "赞", contentWidth, leftMargin + zanImg.getWidth() + textMargin, totalHeight).getHeight();
+        }
+        //评论的总高度
+        if (news.commentList != null) {
+            for (int i = 0; i < news.commentList.size(); i++) {
+                textPaint.setTextSize(nameSize);
+                textPaint.setColor(Color.BLACK);
+                totalHeight += Utils.smartDrawText(canvas, textPaint, news.commentList.get(i).author + ": " + news.commentList.get(i).content, contentWidth, leftMargin, totalHeight).getHeight();
+            }
+        }
+        return totalHeight;
+    }
+
 
     @Override
     protected void onDraw(Canvas canvas) {
-
-        if (mSimpleDraweeView.getTag()!=null) {
-            canvas.drawBitmap((Bitmap) mSimpleDraweeView.getTag(), 10, 10, paint);
-        }else {
-            canvas.drawBitmap(resizeBitmap(imgDefault, 0.5f), 10, 10, paint);
+        int leftMargin = imgDefault.getWidth()+imageMargin;//文字左边距
+        int startY = 0;
+        if (mSimpleDraweeView.getTag() != null) {
+            canvas.drawBitmap((Bitmap) mSimpleDraweeView.getTag(), imageMargin, imageMargin, paint);
+        } else {
+            canvas.drawBitmap(resizeBitmap(imgDefault, 2.0f), imageMargin, imageMargin, paint);
         }
-
-        int topPos = 30;
-
         //人名
-        paint.setTextSize(titleSize);
-        canvas.drawText(news.author, imgDefault.getWidth() + 10, topPos + 10, paint);
-
-//        //内容
-        paint.setTextSize(dispSize);
-        canvas.drawText(news.content, imgDefault.getWidth() + 10, topPos + titleSize + 20 + 10, paint);
+        textPaint.setTextSize(nameSize);
+        textPaint.setColor(Color.BLUE);
+        StaticLayout staticLayout1 = smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, startY);
+        int height = staticLayout1.getHeight();
+        startY += height;
+        //内容
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(titleSize);
+        StaticLayout contentLayout = smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, startY);
+        int contentHeight = contentLayout.getHeight();
+        startY += contentHeight;
 
         //发布时间
-        paint.setTextSize(dispSize);
-        canvas.drawText(news.showtime, imgDefault.getWidth() + 10, topPos + titleSize + 20 + 10 + dispSize + 10, paint);
+        textPaint.setTextSize(nameSize);
+        textPaint.setColor(Color.GRAY);
+        StaticLayout staticLayout2 = smartDrawText(canvas, textPaint, news.showtime, contentWidth, leftMargin, startY);
+        int height1 = staticLayout2.getHeight();
+        startY += height1;
 
         //点赞
         int hasZan = 1;
         if (news.preferList != null) {
             //点赞图标
-            canvas.drawBitmap(resizeBitmap(zanImg, 0.25f), imgDefault.getWidth() + 10, topPos + titleSize + dispSize + 10 + dispSize + 10, paint);
-
+            canvas.drawBitmap(resizeBitmap(zanImg, 1.0f), leftMargin, startY, paint);
             StringBuilder sb = new StringBuilder();
             for (String user : news.preferList) {
                 sb.append(user);
                 sb.append(", ");
             }
-
-            sb.deleteCharAt(sb.length() - 1);
-
-            paint.setTextSize(dispSize);
-            canvas.drawText(sb.toString(), imgDefault.getWidth() + 10 + 60, topPos + titleSize + dispSize + 10 + dispSize + 40, paint);
-
+            sb.deleteCharAt(sb.length() - 2);
+            textPaint.setTextSize(nameSize);
+            textPaint.setColor(Color.BLUE);
+            StaticLayout staticLayout = smartDrawText(canvas, textPaint, sb.toString(), contentWidth, leftMargin + zanImg.getWidth() + textMargin, startY);
+            int height2 = staticLayout.getHeight();
+            startY += height2;
         } else {
             hasZan = 0;
         }
 
-
         //评论
-        int base = topPos + titleSize + dispSize + 10 + dispSize + 10 + 60 + 40 * hasZan;
         if (news.commentList != null) {
             for (int i = 0; i < news.commentList.size(); i++) {
-                paint.setTextSize(dispSize);
-                canvas.drawText(
-                        news.commentList.get(i).author + ": " + news.commentList.get(i).content,
-                        imgDefault.getWidth() + 10,
-                        base + 50 * i,
-                        paint);
+                textPaint.setTextSize(nameSize);
+                textPaint.setColor(Color.BLACK);
+                StaticLayout staticLayout = smartDrawText(canvas, textPaint, news.commentList.get(i).author + ": " + news.commentList.get(i).content, contentWidth, leftMargin, startY);
+                int height2 = staticLayout.getHeight();
+                startY += height2;
             }
         }
 
@@ -166,8 +203,8 @@ public class MyView1 extends View implements ItemViewAware<News>
         // 缩小一倍
         matrix.postScale(scale, scale);
         // 生成新的图片
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                bitmap.getHeight(), matrix, true);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
     }
+
 }
