@@ -6,11 +6,10 @@
     android:layout_height="match_parent"
     >
 
-    <com.example.jianqiang.testlistview.pulltorefresh.PullToRefreshListView
-        android:id="@+id/pull_refresh_list"
+    <com.example.jianqiang.testlistview.MyListView
+        android:id="@+id/mylist"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:ptrMode="pullUpFromBottom">
-    </com.example.jianqiang.testlistview.pulltorefresh.PullToRefreshListView>
+        android:layout_height="match_parent">
+    </com.example.jianqiang.testlistview.MyListView>
 
 </LinearLayout>

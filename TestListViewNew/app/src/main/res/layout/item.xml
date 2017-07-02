@@ -50,7 +50,7 @@
                 android:layout_width="17dp"
                 android:layout_height="17dp"
                 android:adjustViewBounds="false"
-                android:background="@drawable/zan" />
+                android:background="@mipmap/zan" />
 
             <TextView
                 android:id="@+id/tvPreferUserList"
