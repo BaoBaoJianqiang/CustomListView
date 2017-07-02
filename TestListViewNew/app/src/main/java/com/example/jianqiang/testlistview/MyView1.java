@@ -71,7 +71,13 @@ public class MyView1 extends View implements ItemViewAware<News>
             @Override
             public void onSuccess(Bitmap bitmap) {
                 mSimpleDraweeView.setTag(bitmap);
-                invalidate();
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        invalidate();
+                    }
+                });
+
             }
 
             @Override
