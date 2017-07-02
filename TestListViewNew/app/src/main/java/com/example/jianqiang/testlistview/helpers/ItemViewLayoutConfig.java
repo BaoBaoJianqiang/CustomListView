@@ -20,16 +20,6 @@ public class ItemViewLayoutConfig implements Serializable
         this.context = builder.context;
     }
 
-    public int getHeight()
-    {
-        return builder.height;
-    }
-
-    public int getWidth()
-    {
-        return builder.width;
-    }
-
     public float getPrimaryTextSize()
     {
         return builder.primaryTextSize > 0 ? builder.primaryTextSize : context.getResources().getDimension(R.dimen.common_text_size_medium);
@@ -62,13 +52,9 @@ public class ItemViewLayoutConfig implements Serializable
         @ColorInt int primaryTextColor;
         @ColorInt int secondaryTextColor;
 
-        public ConfigBuilder(@NonNull Context context, int height, int width)
+        public ConfigBuilder(@NonNull Context context)
         {
             this.context = context;
-
-            this.height = height;
-
-            this.width = width;
         }
 
         public ConfigBuilder primaryTextSize(float primaryTextSize)
