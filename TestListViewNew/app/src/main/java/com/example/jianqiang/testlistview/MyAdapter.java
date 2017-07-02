@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ItemViewFactoryAware;
@@ -18,13 +19,13 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware {
     private Activity context;
     private ItemViewFactoryAware<News> itemViewFactory;
     private boolean isScrolling;
-    private MyListView mMyListView;
+    private ListView mMyListView;
 
     public MyAdapter(Activity context, List<News> newsList) {
         this(context, newsList, null, null);
     }
 
-    public MyAdapter(Activity context, List<News> newsList, ItemViewFactoryAware<News> itemViewFactory, MyListView listView) {
+    public MyAdapter(Activity context, List<News> newsList, ItemViewFactoryAware<News> itemViewFactory, ListView listView) {
         super();
 
         this.newsList = newsList;
