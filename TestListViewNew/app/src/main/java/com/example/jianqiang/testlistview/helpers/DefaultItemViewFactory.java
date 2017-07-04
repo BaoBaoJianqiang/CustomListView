@@ -2,6 +2,7 @@ package com.example.jianqiang.testlistview.helpers;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.view.View;
 
@@ -9,6 +10,7 @@ import com.example.jianqiang.testlistview.MyView1;
 import com.example.jianqiang.testlistview.News;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ItemViewFactoryAware;
+import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig.ConfigBuilder;
 
 
@@ -20,7 +22,7 @@ public class DefaultItemViewFactory implements ItemViewFactoryAware<News> {
     }
 
     @Override
-    public View obtainItemView(Context context, News news, @NonNull String tag) {
+    public View obtainItemView(Context context, News news, @NonNull String tag, @Nullable OnItemViewClickedListener<News> listener) {
         if (news == null || context == null) return null;
 
         ItemViewAware<News> itemViewAware = mCachedViewList.get(tag);
@@ -29,6 +31,7 @@ public class DefaultItemViewFactory implements ItemViewFactoryAware<News> {
         }
         MyView1 convertView = new MyView1(context);
         convertView.setData(news, createLayoutConfig(context));
+        convertView.setOnItemViewClickedListener(listener);
         mCachedViewList.put(tag, convertView);
 
         return convertView;

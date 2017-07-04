@@ -8,4 +8,5 @@ public interface ItemViewAware<T>
 
     boolean triggerNetworkJob(ListAdapterAware adapter, int position);
 
+    void setOnItemViewClickedListener(OnItemViewClickedListener<T> listener);
 }
