@@ -10,12 +10,14 @@ import android.graphics.Paint;
 import android.net.Uri;
 import android.text.StaticLayout;
 import android.text.TextPaint;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.jianqiang.testlistview.awares.IResultListener;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
+import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 
 import static com.example.jianqiang.testlistview.Utils.smartDrawText;
@@ -34,6 +36,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
     Bitmap imgDefault;
     ImageView mSimpleDraweeView;
     Context mContext;
+    OnItemViewClickedListener<News> mOnItemViewClickedListener;
 
     public MyView1(Context context) {
         super(context);
@@ -64,7 +67,14 @@ public class MyView1 extends View implements ItemViewAware<News> {
             @Override
             public void onSuccess(Bitmap bitmap) {
                 mSimpleDraweeView.setTag(bitmap);
-                invalidate();
+                post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        invalidate();
+                    }
+                });
             }
 
             @Override
@@ -77,6 +87,11 @@ public class MyView1 extends View implements ItemViewAware<News> {
         return true;
     }
 
+    @Override
+    public void setOnItemViewClickedListener(OnItemViewClickedListener<News> listener)
+    {
+        mOnItemViewClickedListener = listener;
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -207,4 +222,19 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        int action = event.getAction();
+
+        if(action == MotionEvent.ACTION_UP)
+        {
+            if(mOnItemViewClickedListener != null)
+            {
+                mOnItemViewClickedListener.onItemClicked(news);
+            }
+        }
+
+        return true;
+    }
 }

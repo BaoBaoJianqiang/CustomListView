@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ItemViewFactoryAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
+import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
 import com.example.jianqiang.testlistview.helpers.DefaultItemViewFactory;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware {
     private ItemViewFactoryAware<News> itemViewFactory;
     private boolean isScrolling;
     private MyListView mMyListView;
+    private OnListItemClickedListener mOnListItemClickedListener;
 
     public MyAdapter(Activity context, List<News> newsList) {
         this(context, newsList, null, null);
@@ -72,7 +74,19 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware {
 
     public View getView(final int position, View convertView,
                         final ViewGroup parent) {
-        convertView = itemViewFactory.obtainItemView(parent.getContext(), newsList.get(position), String.valueOf(position));
+        convertView = itemViewFactory.obtainItemView(parent.getContext(), newsList.get(position), String.valueOf(position), new OnItemViewClickedListener<News>()
+        {
+            @Override
+            public void onItemClicked(News news)
+            {
+                if(news == null) return;
+
+                if(mOnListItemClickedListener != null)
+                {
+                    mOnListItemClickedListener.onListItemClicked(position, news);
+                }
+            }
+        });
 
         if ((convertView instanceof ItemViewAware) && !isScrolling) {
             ((ItemViewAware) convertView).triggerNetworkJob(this, position);
@@ -113,8 +127,16 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware {
             return;
 
         }
+    }
 
+    public void setOnListItemClickedListener(OnListItemClickedListener listener)
+    {
+        mOnListItemClickedListener = listener;
+    }
 
+    public interface OnListItemClickedListener
+    {
+        void onListItemClicked(int position, News news);
     }
 
 }
