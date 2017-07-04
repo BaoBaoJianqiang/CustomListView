@@ -45,6 +45,9 @@ public class MyView1 extends View implements ItemViewAware<News> {
     Context mContext;
     OnItemViewClickedListener<News> mOnItemViewClickedListener;
 
+    //用于图片列表
+    ImageView[] imageViews;
+
     public MyView1(Context context) {
         super(context);
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -64,6 +67,10 @@ public class MyView1 extends View implements ItemViewAware<News> {
         this.news = news;
 
         //TODO read other custom values
+
+        if (news.imageList != null) {
+            imageViews = new ImageView[news.imageList.size()];
+        }
     }
 
     @Override
@@ -89,8 +96,39 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
             }
         });
-        //TODO After success of the network call
-//
+
+        //获取图片列表
+        if(news.imageList != null) {
+            for (int i = 0 ; i < news.imageList.size(); i++) {
+                final int[] count = new int[1];
+
+                Uri imageUri = Uri.parse(news.imageList.get(i).smallImageUrl);
+                FrescoUtils.downloadBitmap(imageUri, mContext, new IResultListener() {
+                    @Override
+                    public void onSuccess(Bitmap bitmap) {
+
+                        ImageView imageView = new ImageView(mContext);
+                        imageView.setTag(bitmap);
+                        imageViews[count[0]++] = imageView;
+
+                        post(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                invalidate();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFail() {
+
+                    }
+                });
+            }
+        }
+
         return true;
     }
 
@@ -214,8 +252,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 int y = startY + (i/3) * (shareImageSize + shareImageGap);
 
                 //这些代码，需要fat修改一下，从服务器下载
-                if (mSimpleDraweeView.getTag() != null) {
-                    canvas.drawBitmap((Bitmap) mSimpleDraweeView.getTag(), x, y, paint);
+                if (imageViews[i]!=null && imageViews[i].getTag() != null) {
+                    canvas.drawBitmap((Bitmap) imageViews[i].getTag(), x, y, paint);
                 } else {
                     canvas.drawBitmap(resizeBitmap(imgDefault, 2.0f), x, y, paint);
                 }
