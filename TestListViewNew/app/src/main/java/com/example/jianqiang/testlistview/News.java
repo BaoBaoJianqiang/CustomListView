@@ -21,4 +21,6 @@ public class News {
     public String[] preferList;
 
     public List<Comment> commentList;
+
+    public List<ImageEntity> imageList;
 }

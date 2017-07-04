@@ -65,7 +65,7 @@ public class MyListView extends ListView
 
                         if(itemView instanceof ItemViewAware)
                         {
-                            boolean  loadSuccess= ((ItemViewAware) itemView).triggerNetworkJob((ListAdapterAware) getAdapter(),i);
+                            boolean loadSuccess= ((ItemViewAware) itemView).triggerNetworkJob((ListAdapterAware) getAdapter(),i);
                         }
                     }
                 }

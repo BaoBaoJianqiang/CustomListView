@@ -31,6 +31,13 @@ public class MyView1 extends View implements ItemViewAware<News> {
     int textMargin = 10;
     int imageMargin = 10;
     int contentWidth = 560;
+
+    //图片列表, 每张图片的宽度（高度），图片之间的间距
+    int shareImageSize = 100;
+    int shareImageGap = 10;
+    //图片列表的总高度
+    int imageTotalHeight = 0;
+
     News news;
     Bitmap zanImg;
     Bitmap imgDefault;
@@ -131,6 +138,32 @@ public class MyView1 extends View implements ItemViewAware<News> {
         //发布时间的高度
         textPaint.setTextSize(nameSize);
         totalHeight += Utils.smartDrawText(canvas, textPaint, news.showtime, contentWidth, leftMargin, totalHeight).getHeight();
+
+        if(news.imageList != null) {
+            int length = news.imageList.size();
+            switch (length) {
+                case 1:
+                case 2:
+                case 3:
+                    imageTotalHeight = shareImageSize + shareImageGap * 2;
+                    break;
+                case 4:
+                case 5:
+                case 6:
+                    imageTotalHeight = shareImageSize * 2 + shareImageGap * 3;
+                    break;
+                case 7:
+                case 8:
+                case 9:
+                    imageTotalHeight = shareImageSize * 3 + shareImageGap * 4;
+                    break;
+                default:
+                    break;
+            }
+
+            totalHeight += imageTotalHeight;
+        }
+
         //点赞的高度
         if (news.preferList != null) {
             textPaint.setTextSize(nameSize);
@@ -158,18 +191,39 @@ public class MyView1 extends View implements ItemViewAware<News> {
         } else {
             canvas.drawBitmap(resizeBitmap(imgDefault, 2.0f), imageMargin, imageMargin, paint);
         }
+
         //人名
         textPaint.setTextSize(nameSize);
         textPaint.setColor(Color.BLUE);
         StaticLayout staticLayout1 = smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, startY);
         int height = staticLayout1.getHeight();
         startY += height;
+
         //内容
         textPaint.setColor(Color.BLACK);
         textPaint.setTextSize(titleSize);
         StaticLayout contentLayout = smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, startY);
         int contentHeight = contentLayout.getHeight();
         startY += contentHeight;
+
+        //图片列表
+        if(news.imageList != null) {
+            for (int i = 0 ; i < news.imageList.size(); i++) {
+
+                int x = leftMargin + (i%3) * (shareImageSize + shareImageGap);
+                int y = startY + (i/3) * (shareImageSize + shareImageGap);
+
+                //这些代码，需要fat修改一下，从服务器下载
+                if (mSimpleDraweeView.getTag() != null) {
+                    canvas.drawBitmap((Bitmap) mSimpleDraweeView.getTag(), x, y, paint);
+                } else {
+                    canvas.drawBitmap(resizeBitmap(imgDefault, 2.0f), x, y, paint);
+                }
+            }
+        }
+
+        //累加图片列表的高度，从而为了绘制下一行
+        startY += imageTotalHeight;
 
         //发布时间
         textPaint.setTextSize(nameSize);
