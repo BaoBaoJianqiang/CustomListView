@@ -12,7 +12,6 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 
 import com.example.jianqiang.testlistview.awares.IResultListener;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
@@ -41,7 +40,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
     News news;
     Bitmap zanImg;
     Bitmap imgDefault;
-    ImageView mSimpleDraweeView;
+    Bitmap avatorImg;
     Context mContext;
     OnItemViewClickedListener<News> mOnItemViewClickedListener;
 
@@ -53,7 +52,6 @@ public class MyView1 extends View implements ItemViewAware<News> {
         mContext = context;
         zanImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.zan);
         imgDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
-        mSimpleDraweeView = new ImageView(context);
     }
 
     @Override
@@ -73,9 +71,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
         FrescoUtils.downloadBitmap(uri, mContext, new IResultListener() {
             @Override
             public void onSuccess(Bitmap bitmap) {
-                mSimpleDraweeView.setTag(bitmap);
-                post(new Runnable()
-                {
+                avatorImg = bitmap;
+                post(new Runnable() {
                     @Override
                     public void run()
                     {
@@ -186,8 +183,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
     protected void onDraw(Canvas canvas) {
         int leftMargin = imgDefault.getWidth()+imageMargin;//文字左边距
         int startY = 0;
-        if (mSimpleDraweeView.getTag() != null) {
-            canvas.drawBitmap((Bitmap) mSimpleDraweeView.getTag(), imageMargin, imageMargin, paint);
+        if (avatorImg != null) {
+            canvas.drawBitmap(avatorImg, imageMargin, imageMargin, paint);
         } else {
             canvas.drawBitmap(resizeBitmap(imgDefault, 2.0f), imageMargin, imageMargin, paint);
         }
@@ -214,8 +211,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 int y = startY + (i/3) * (shareImageSize + shareImageGap);
 
                 //这些代码，需要fat修改一下，从服务器下载
-                if (mSimpleDraweeView.getTag() != null) {
-                    canvas.drawBitmap((Bitmap) mSimpleDraweeView.getTag(), x, y, paint);
+                if (avatorImg != null) {
+                    canvas.drawBitmap(avatorImg, x, y, paint);
                 } else {
                     canvas.drawBitmap(resizeBitmap(imgDefault, 2.0f), x, y, paint);
                 }
