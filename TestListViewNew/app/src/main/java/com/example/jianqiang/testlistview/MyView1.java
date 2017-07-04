@@ -41,12 +41,13 @@ public class MyView1 extends View implements ItemViewAware<News> {
     News news;
     Bitmap zanImg;
     Bitmap imgDefault;
-    ImageView mSimpleDraweeView;
+    Bitmap avatorImg;
+    Bitmap listImg;
     Context mContext;
     OnItemViewClickedListener<News> mOnItemViewClickedListener;
 
     //用于图片列表
-    ImageView[] imageViews;
+//    ImageView[] imageViews;
 
     public MyView1(Context context) {
         super(context);
@@ -56,7 +57,6 @@ public class MyView1 extends View implements ItemViewAware<News> {
         mContext = context;
         zanImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.zan);
         imgDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
-        mSimpleDraweeView = new ImageView(context);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
         //TODO read other custom values
 
         if (news.imageList != null) {
-            imageViews = new ImageView[news.imageList.size()];
+//            imageViews = new ImageView[news.imageList.size()];
         }
     }
 
@@ -80,7 +80,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
         FrescoUtils.downloadBitmap(uri, mContext, new IResultListener() {
             @Override
             public void onSuccess(Bitmap bitmap) {
-                mSimpleDraweeView.setTag(bitmap);
+                avatorImg =bitmap;
                 post(new Runnable()
                 {
                     @Override
@@ -109,7 +109,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
                         ImageView imageView = new ImageView(mContext);
                         imageView.setTag(bitmap);
-                        imageViews[count[0]++] = imageView;
+//                        imageViews[count[0]++] = imageView;
+                        listImg = bitmap;
 
                         post(new Runnable()
                         {
@@ -224,8 +225,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
     protected void onDraw(Canvas canvas) {
         int leftMargin = imgDefault.getWidth()+imageMargin;//文字左边距
         int startY = 0;
-        if (mSimpleDraweeView.getTag() != null) {
-            canvas.drawBitmap((Bitmap) mSimpleDraweeView.getTag(), imageMargin, imageMargin, paint);
+        if (avatorImg != null) {
+            canvas.drawBitmap(avatorImg, imageMargin, imageMargin, paint);
         } else {
             canvas.drawBitmap(resizeBitmap(imgDefault, 2.0f), imageMargin, imageMargin, paint);
         }
@@ -252,8 +253,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 int y = startY + (i/3) * (shareImageSize + shareImageGap);
 
                 //这些代码，需要fat修改一下，从服务器下载
-                if (imageViews[i]!=null && imageViews[i].getTag() != null) {
-                    canvas.drawBitmap((Bitmap) imageViews[i].getTag(), x, y, paint);
+                if (listImg!=null ) {
+                    canvas.drawBitmap(listImg, x, y, paint);
                 } else {
                     canvas.drawBitmap(resizeBitmap(imgDefault, 2.0f), x, y, paint);
                 }
