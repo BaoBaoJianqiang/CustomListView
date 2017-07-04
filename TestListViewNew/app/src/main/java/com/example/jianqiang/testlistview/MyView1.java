@@ -42,12 +42,21 @@ public class MyView1 extends View implements ItemViewAware<News> {
     Bitmap zanImg;
     Bitmap imgDefault;
     Bitmap avatorImg;
+
+    //文章左边的图片
+    Bitmap articleImg;
+
     Bitmap listImg;
     Context mContext;
     OnItemViewClickedListener<News> mOnItemViewClickedListener;
 
     //用于图片列表
 //    ImageView[] imageViews;
+
+    //分享文章的高度和宽度都是固定的
+    int articleHeight = 150;
+    int articleFontSize = 30;
+
 
     public MyView1(Context context) {
         super(context);
@@ -61,12 +70,9 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
     @Override
     public void setData(News news, ItemViewLayoutConfig layoutConfig) {
-
         if (layoutConfig == null)
             return;
         this.news = news;
-
-        //TODO read other custom values
 
         if (news.imageList != null) {
 //            imageViews = new ImageView[news.imageList.size()];
@@ -75,14 +81,14 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
     @Override
     public boolean triggerNetworkJob(final ListAdapterAware adapter, final int position) {
-        //TODO do network job here
+
+        //获取人物头像
         Uri uri = Uri.parse(news.avator);
         FrescoUtils.downloadBitmap(uri, mContext, new IResultListener() {
             @Override
             public void onSuccess(Bitmap bitmap) {
                 avatorImg =bitmap;
-                post(new Runnable()
-                {
+                post(new Runnable() {
                     @Override
                     public void run()
                     {
@@ -96,6 +102,29 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
             }
         });
+
+        //获取文章图片
+        if(news.article != null) {
+            Uri uri2 = Uri.parse(news.article.imageUrl);
+            FrescoUtils.downloadBitmap(uri2, mContext, new IResultListener() {
+                @Override
+                public void onSuccess(Bitmap bitmap) {
+                    articleImg = bitmap;
+                    post(new Runnable() {
+                        @Override
+                        public void run()
+                        {
+                            invalidate();
+                        }
+                    });
+                }
+
+                @Override
+                public void onFail() {
+
+                }
+            });
+        }
 
         //获取图片列表
         if(news.imageList != null) {
@@ -134,16 +163,15 @@ public class MyView1 extends View implements ItemViewAware<News> {
     }
 
     @Override
-    public void setOnItemViewClickedListener(OnItemViewClickedListener<News> listener)
-    {
+    public void setOnItemViewClickedListener(OnItemViewClickedListener<News> listener) {
         mOnItemViewClickedListener = listener;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        setMeasuredDimension(measureWidth(widthMeasureSpec), getTotalHeight());
 
+        setMeasuredDimension(measureWidth(widthMeasureSpec), getTotalHeight());
     }
 
     //获取测量宽度，同时设置文字的最大宽度
@@ -168,6 +196,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
         int leftMargin = imgDefault.getWidth() / 2;//文字左边距
         Canvas canvas = new Canvas();
         int totalHeight = 0;
+
         //人名的高度
         textPaint.setTextSize(nameSize);
         totalHeight += smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, totalHeight).getHeight();
@@ -177,6 +206,11 @@ public class MyView1 extends View implements ItemViewAware<News> {
         //发布时间的高度
         textPaint.setTextSize(nameSize);
         totalHeight += Utils.smartDrawText(canvas, textPaint, news.showtime, contentWidth, leftMargin, totalHeight).getHeight();
+
+        //分享文章
+        if(news.article != null) {
+            totalHeight += articleHeight;
+        }
 
         if(news.imageList != null) {
             int length = news.imageList.size();
@@ -244,6 +278,28 @@ public class MyView1 extends View implements ItemViewAware<News> {
         StaticLayout contentLayout = smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, startY);
         int contentHeight = contentLayout.getHeight();
         startY += contentHeight;
+
+
+        //分享文章
+        if(news.article != null) {
+            paint.setColor(0xFFF3F3F5);// 设置灰色
+            paint.setStyle(Paint.Style.FILL);//设置填满
+            canvas.drawRect(leftMargin, startY, contentWidth, articleHeight, paint);// 长方形
+
+            paint.setTextSize(articleFontSize);
+            paint.setColor(Color.BLACK);//
+            canvas.drawText(news.article.title, leftMargin + imgDefault.getWidth(), startY, paint);
+
+
+            if (articleImg != null) {
+                canvas.drawBitmap(articleImg, leftMargin, startY, paint);
+            } else {
+                canvas.drawBitmap(resizeBitmap(imgDefault, 2.0f), leftMargin, startY, paint);
+            }
+
+
+            startY += articleHeight;
+        }
 
         //图片列表
         if(news.imageList != null) {

@@ -95,14 +95,19 @@ public class Utils {
                 "http://images2015.cnblogs.com/blog/13430/201707/13430-20170702195629789-2082196185.jpg",
                 "http://images2015.cnblogs.com/blog/13430/201707/13430-20170702195629243-1895016019.jpg"));
 
+        Article article = new Article("写给Android App开发人员看的Android底层知识（6）",
+                "https://pic.cnblogs.com/face/522886/20130430210423.png",
+                "https://mp.weixin.qq.com/s?srcid=05288cTv2IBYRVUxz1j6EhnG&scene=23&mid=2247483762&sn=58816eaeb1ecb8e42ef7cb35b52ab03a&idx=1&__biz=MzI2NzM1Njk4MQ%3D%3D&chksm=ea815f28ddf6d63e0eff29dd5c185552d69bfe9e3008e68115b89c4a403f20fdce0a67c22e9f&mpshare=1&key=7dad7409be596df695e7c725d2e2166b4eb608c034b768212dce373c28bb0060ddea1bd2f94f081df45b3f09f8ada015a50590e645a119c4f05b76cd86b989d00560d723b308db869325e7e08e048b4d&ascene=0&uin=MTIxMjgxNjU0MQ%3D%3D&devicetype=iMac+MacBookAir5%2C2+OSX+OSX+10.11.6+build(15G31)&version=12020510&nettype=WIFI&fontScale=100&pass_ticket=AHHXeHr0CIiOW2vWsgK6YJMUNx4YMbnnZmtgEKgjwhd6wkko7fPA5gloJZMtoT8l#rd&appinstall=0");
+
         News news1 = new News();
         news1.author = "太乙真人";
         news1.avator = "https://pic.cnblogs.com/face/605230/20170228090302.png";
         news1.content = "王者荣耀走起";
-        news1.showtime = hours+"小时前";
+        news1.showtime = "2小时前";
         news1.preferList = new String[]{"高渐离", "张飞", "不知火舞"};
         news1.commentList = commentList1;
         news1.imageList = imageList;
+        news1.article = article;
 
         return news1;
     }

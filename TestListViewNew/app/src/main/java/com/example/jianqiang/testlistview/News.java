@@ -23,4 +23,6 @@ public class News {
     public List<Comment> commentList;
 
     public List<ImageEntity> imageList;
+
+    public Article article;
 }
