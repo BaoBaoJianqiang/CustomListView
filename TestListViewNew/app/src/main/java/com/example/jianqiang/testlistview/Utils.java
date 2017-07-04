@@ -22,6 +22,7 @@ public class Utils {
         newsList.add(genNew7());
         newsList.add(genNew8());
         newsList.add(genNew9());
+        newsList.add(genNew10());
 
         return newsList;
     }
@@ -186,7 +187,7 @@ public class Utils {
         List<Comment> commentList1 = new ArrayList<Comment>();
         commentList1.add(new Comment("孙猴", "吃俺老孙一棒！"));
         commentList1.add(new Comment("老猪", "高老庄一日游"));
-        commentList1.add(new Comment("老沙 回复", "大师兄，师父被妖怪抓走了～～"));
+        commentList1.add(new Comment("老沙 回复 孙猴", "大师兄，师父被妖怪抓走了～～"));
 
         News news1 = new News();
         news1.author = "唐僧";
@@ -198,4 +199,14 @@ public class Utils {
 
         return news1;
     }
-}
+
+    static News genNew10() {
+        News news1 = new News();
+        news1.author = "包建强";
+        news1.avator = "https://pic.cnblogs.com/face/1118933/20170616222517.png";
+        news1.content = "Android培训哪家强？";
+        news1.showtime = "10小时前";
+        news1.preferList = new String[]{"老邓", "老张", "玉刚"};
+
+        return news1;
+    }}
