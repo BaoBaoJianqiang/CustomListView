@@ -6,6 +6,8 @@ import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 
+import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,7 +106,7 @@ public class Utils {
         news1.avator = "https://pic.cnblogs.com/face/605230/20170228090302.png";
         news1.content = "王者荣耀走起";
         news1.showtime = "2小时前";
-        news1.preferList = new String[]{"高渐离", "张飞", "不知火舞"};
+        news1.preferList = ZanContentHelper.initPreferListFromArray(new String[]{"高渐离", "张飞", "不知火舞", "有些人就是喜欢把ID起得很长很长你说讨厌不讨厌"});
         news1.commentList = commentList1;
         news1.imageList = imageList;
         news1.article = article;
@@ -131,7 +133,7 @@ public class Utils {
         news1.avator = "https://pic.cnblogs.com/face/u383503.jpg?id=26222424";
         news1.content = "晚上团建";
         news1.showtime = hours+"小时前";
-        news1.preferList = new String[]{"老爸", "老妈", "三姨"};
+        news1.preferList = ZanContentHelper.initPreferListFromArray(new String[]{"老爸", "老妈", "三姨"});
         news1.commentList = commentList1;
         news1.imageList = imageList;
 
@@ -155,7 +157,7 @@ public class Utils {
         news1.avator = "https://pic.cnblogs.com/face/433855/20130219085148.png";
         news1.content = "TCP/IP协议栈是一系列网络协议的总和，是构成网络通信的核心骨架";
         news1.showtime = hours+"小时前";
-        news1.preferList = new String[]{"叶曲波", "起为", "郭刚"};
+        news1.preferList = ZanContentHelper.initPreferListFromArray(new String[]{"叶曲波", "起为", "郭刚"});
         news1.imageList = imageList;
 
         return news1;
@@ -186,7 +188,7 @@ public class Utils {
         news1.avator = "https://pic.cnblogs.com/face/834468/20151115214952.png";
         news1.content = "名利场终于写完了";
         news1.showtime = hours+"小时前";
-        news1.preferList = new String[]{"高尔斯华绥", "阿婆", "乔叟"};
+        news1.preferList = ZanContentHelper.initPreferListFromArray(new String[]{"高尔斯华绥", "阿婆", "乔叟"});
         news1.commentList = commentList1;
         news1.imageList = imageList;
 
@@ -220,7 +222,7 @@ public class Utils {
         news1.avator = "https://pic.cnblogs.com/face/1118933/20170616222517.png";
         news1.content = "晒一下我的烘焙蛋糕";
         news1.showtime = hours+"小时前";
-        news1.preferList = new String[]{"蛋糕达人", "白雪公主", "蓝精灵"};
+        news1.preferList = ZanContentHelper.initPreferListFromArray(new String[]{"蛋糕达人", "白雪公主", "蓝精灵"});
         news1.commentList = commentList1;
         news1.imageList = imageList;
 
@@ -259,7 +261,7 @@ public class Utils {
         news1.avator = "https://pic.cnblogs.com/face/250417/20160816172634.png";
         news1.content = "有痔疮怎么办？";
         news1.showtime = hours+"小时前";
-        news1.preferList = new String[]{"周芷若", "赵敏", "小昭"};
+        news1.preferList = ZanContentHelper.initPreferListFromArray(new String[]{"周芷若", "赵敏", "小昭"});
         news1.commentList = commentList1;
         news1.imageList = imageList;
 
@@ -300,7 +302,7 @@ public class Utils {
         news1.avator = "https://pic.cnblogs.com/face/1181291/20170629150910.png";
         news1.content = "105个男人和3个女人的故事";
         news1.showtime = hours+"小时前";
-        news1.preferList = new String[]{"李逵", "卢俊义", "孙二娘"};
+        news1.preferList = ZanContentHelper.initPreferListFromArray(new String[]{"李逵", "卢俊义", "孙二娘"});
         news1.commentList = commentList1;
         news1.imageList = imageList;
 
@@ -344,7 +346,7 @@ public class Utils {
         news1.avator = "https://pic.cnblogs.com/face/601535/20140621193541.png";
         news1.content = "骑白马的不一定是我～～";
         news1.showtime = hours+"小时前";
-        news1.preferList = new String[]{"杨戬", "太上老君的那头牛", "玉皇大帝"};
+        news1.preferList = ZanContentHelper.initPreferListFromArray(new String[]{"杨戬", "太上老君的那头牛", "玉皇大帝"});
         news1.commentList = commentList1;
         news1.imageList = imageList;
 
@@ -386,7 +388,7 @@ public class Utils {
         news1.avator = "https://pic.cnblogs.com/face/1118933/20170616222517.png";
         news1.content = "Android培训哪家强？";
         news1.showtime = hours+"小时前";
-        news1.preferList = new String[]{"老邓", "老张", "玉刚"};
+        news1.preferList = ZanContentHelper.initPreferListFromArray(new String[]{"老邓", "老张", "玉刚"});
         news1.imageList = imageList;
 
         return news1;
