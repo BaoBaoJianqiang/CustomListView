@@ -1,6 +1,7 @@
 package com.example.jianqiang.testlistview;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -19,6 +20,7 @@ import com.example.jianqiang.testlistview.awares.IResultListener;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
+import com.example.jianqiang.testlistview.helpers.AccountHelper;
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 import com.example.jianqiang.testlistview.helpers.ViewCoordinateHelper;
 import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
@@ -355,11 +357,11 @@ public class MyView1 extends View implements ItemViewAware<News> {
             paint.setColor(0xFFF3F3F5);// 设置灰色
             paint.setStyle(Paint.Style.FILL);//设置填满
             canvas.drawRect(leftMargin, startY, contentWidth, articleHeight, paint);// 长方形
+            viewCoordinateHelper.setArticleRect(leftMargin, startY, contentWidth, articleHeight);
 
             paint.setTextSize(articleFontSize);
             paint.setColor(Color.BLACK);//
             canvas.drawText(news.article.title, leftMargin + imgDefault.getWidth(), startY, paint);
-
 
             if (articleImg != null) {
                 canvas.drawBitmap(articleImg, leftMargin, startY, paint);
@@ -466,14 +468,22 @@ public class MyView1 extends View implements ItemViewAware<News> {
             {
                 if(zanContentHelper.isZan)
                 {
-                    zanContentHelper.removeZan(news.author);
+                    zanContentHelper.removeZan(AccountHelper.getInstance().getAccountName());
                 }
                 else
                 {
-                    zanContentHelper.addZan(news.author);
+                    zanContentHelper.addZan(AccountHelper.getInstance().getAccountName());
                 }
 
                 updateCellAfterZanAction();
+            }
+            else if(viewCoordinateHelper.isArticleClicked((int)event.getX(), (int)event.getY()))
+            {
+                Intent intent = new Intent();
+                intent.setAction("android.intent.action.VIEW");
+                Uri url = Uri.parse(news.article.articleUrl);
+                intent.setData(url);
+                getContext().startActivity(intent);
             }
             else
             {

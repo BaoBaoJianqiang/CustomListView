@@ -4,11 +4,22 @@ import android.graphics.Rect;
 
 public class ViewCoordinateHelper
 {
+    private static final int padding = 20;
     private Rect zanButtonRect;
+    private Rect articleRect;
+
+    private boolean isRectExist(Rect rect, int left, int top, int right, int bottom)
+    {
+        return rect != null && rect.left == left && rect.top == top
+                && rect.right == right && rect.bottom == bottom;
+    }
 
     public void setZanButtonRect(int left, int top, int width, int height)
     {
-        zanButtonRect = new Rect(left - 20, top - 20, left + width + 20, top + height + 20);
+        if(!isRectExist(zanButtonRect, left - padding, top - padding, left + width + padding, top + height + padding))
+        {
+            zanButtonRect = new Rect(left - padding, top - padding, left + width + padding, top + height + padding);
+        }
     }
 
     public boolean isZanClicked(int x, int y)
@@ -17,5 +28,21 @@ public class ViewCoordinateHelper
 
         return x >= zanButtonRect.left && x <= zanButtonRect.right
                 && y >= zanButtonRect.top && y <= zanButtonRect.bottom;
+    }
+
+    public void setArticleRect(int left, int top, int right, int bottom)
+    {
+        if(!isRectExist(articleRect, left, top, right, bottom))
+        {
+            articleRect = new Rect(left, top, right, bottom);
+        }
+    }
+
+    public boolean isArticleClicked(int x, int y)
+    {
+        if(articleRect == null) return false;
+
+        return x >= articleRect.left && x <= articleRect.right
+                && y >= articleRect.top && y <= articleRect.bottom;
     }
 }
