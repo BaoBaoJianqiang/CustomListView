@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+    <!--背景色-->
+    <color name="white_back">#ffffff</color>
+    <color name="gray_back">#f0f0f0</color>
+    <color name="black_back">#333333</color>
+    <color name="green_back">#333333</color>
+    <color name="yellow_back">#ed731b</color>
+    <color name="red_back">#ca151e</color>
+    <color name="light_black">#666666</color>
+    <color name="blue_back">#FF216F</color>
+    <color name="trans_white">#99ffffff</color>
+    <color name="transparent">#00000000</color>
+    <color name="coupon">#dddddd</color>
+    <color name="grayline">#eeeeee</color>
+
+
+    <!--字体颜色-->
+    <color name="gray_text">#999999</color>
+    <color name="gray">#eeeeee</color>
+    <color name="white_text">#ffffff</color>
+    <color name="green_text">#FF216F</color>
+    <color name="tr_white">#4Defefef</color>
+    <color name="black_text">#1e1d1d</color>
+    <color name="b_text">#1E1D1D</color>
+    <color name="blue_text">#ff2070</color>
+    <color name="blue">#2C66AD</color>
+    <color name="red_text">#ff2070</color>
+    <color name="no_color">#00000000</color>
+
+
+
+</resources>
