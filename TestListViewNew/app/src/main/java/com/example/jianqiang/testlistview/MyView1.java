@@ -244,6 +244,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
         //人名的高度
         textPaint.setTextSize(mBuilder.getNameSize());
+
         totalHeight += Utils.smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, totalHeight).getHeight();
         //内容的高度
         textPaint.setTextSize(mBuilder.getContentSize());
@@ -251,13 +252,15 @@ public class MyView1 extends View implements ItemViewAware<News> {
         lineCount++;
         //发布时间的高度
         textPaint.setTextSize(mBuilder.getContentSize());
-        int height = Math.max(Utils.smartDrawText(canvas, textPaint, news.showtime, contentWidth, leftMargin, totalHeight).getHeight(), zanButtonOn.getHeight());
+        Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
+        int timeHeight = (int) (fontMetrics.bottom - fontMetrics.top);
+        int height = Math.max(timeHeight, zanButtonOn.getHeight());
         totalHeight += height;
         lineCount++;
         Log.e("height------->", String.valueOf(totalHeight));
         //分享文章
         if (news.article != null) {
-            totalHeight += mBuilder.getArticleHeight();
+            totalHeight += articleImg.getHeight();
             lineCount++;
         }
         //分享图片
@@ -337,7 +340,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
             paint.setTextSize(mBuilder.getArticleFontSize());
             paint.setColor(Color.BLACK);//
-            smartDrawText(canvas, textPaint, news.article.title, contentWidth, leftMargin + imgDefault.getWidth(), startY);
+            smartDrawText(canvas, textPaint, news.article.title, contentWidth, leftMargin+avatorImg.getWidth()+mBuilder.getLineMargin() , startY);
             startY += articleImg.getHeight() + mBuilder.getLineMargin();
         }
 
@@ -358,23 +361,25 @@ public class MyView1 extends View implements ItemViewAware<News> {
             startY += allImageHeight + mBuilder.getLineMargin();
         }
 
-
         //发布时间
         textPaint.setTextSize(mBuilder.getNameSize());
+        int textWidth = (int) textPaint.measureText(news.showtime);
         textPaint.setColor(Color.GRAY);
-        StaticLayout staticLayout2 = Utils.smartDrawText(canvas, textPaint, news.showtime, contentWidth, leftMargin, startY);
+        Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
+        int timeHeight = (int) (fontMetrics.bottom - fontMetrics.top);
+        int baseY = (int) (startY + timeHeight - fontMetrics.bottom);
+        canvas.drawText(news.showtime, leftMargin, baseY, textPaint);
         //点赞button
-        int zanButtonLeft = leftMargin + 400;
+        int zanButtonLeft = textWidth + leftMargin + mBuilder.getLineMargin();
         if (zanContentHelper.isZan) {
             viewCoordinateHelper.setZanButtonRect(zanButtonLeft, startY, zanButtonOn.getWidth(), zanButtonOn.getHeight());
-
             canvas.drawBitmap(zanButtonOn, zanButtonLeft, startY, paint);
         } else {
             viewCoordinateHelper.setZanButtonRect(zanButtonLeft, startY, zanButtonOff.getWidth(), zanButtonOff.getHeight());
 
             canvas.drawBitmap(zanButtonOff, zanButtonLeft, startY, paint);
         }
-        startY += staticLayout2.getHeight();
+        startY += zanButtonOn.getHeight();
 
         //点赞
         int hasZan = 1;
