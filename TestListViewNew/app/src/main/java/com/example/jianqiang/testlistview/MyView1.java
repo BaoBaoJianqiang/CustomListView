@@ -51,6 +51,9 @@ public class MyView1 extends View implements ItemViewAware<News> {
     //用于图片列表
 //    ImageView[] imageViews;
 
+    //行间距
+    int cellMargin = 20;
+
 
     public MyView1(Context context) {
         super(context);
@@ -297,7 +300,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
             lineCount++;
         }
         lastTotalHeight = totalHeight + lineCount * mBuilder.getLineMargin();
-        return totalHeight + mBuilder.getLineMargin() * lineCount;
+        return totalHeight + mBuilder.getLineMargin() * lineCount + cellMargin;
     }
 
     @Override
@@ -311,6 +314,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
         } else {
             canvas.drawBitmap(imgDefault, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
         }
+        canvas.drawBitmap(imgDefault, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
 
         //人名
         textPaint.setTextSize(mBuilder.getNameSize());
