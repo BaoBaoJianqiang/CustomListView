@@ -61,7 +61,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
         zanImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.zan);
         zanButtonOn = BitmapFactory.decodeResource(context.getResources(), R.drawable.btn_star_on);
         zanButtonOff = BitmapFactory.decodeResource(context.getResources(), R.drawable.btn_star_off);
-        imgDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
+        imgDefault = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
         viewCoordinateHelper = new ViewCoordinateHelper();
     }
 
@@ -300,11 +300,12 @@ public class MyView1 extends View implements ItemViewAware<News> {
         return totalHeight + mBuilder.getLineMargin() * lineCount;
     }
 
-
     @Override
     protected void onDraw(Canvas canvas) {
         int leftMargin = imgDefault.getWidth() + mBuilder.getImageSpace();//文字左边距
         int startY = 0;
+
+        //头像
         if (avatorImg != null) {
             canvas.drawBitmap(avatorImg, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
         } else {
