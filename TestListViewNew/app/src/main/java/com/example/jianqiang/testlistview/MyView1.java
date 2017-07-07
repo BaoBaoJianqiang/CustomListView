@@ -62,8 +62,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
         textPaint.setColor(Color.BLACK);
         mContext = context;
         zanImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.zan);
-        zanButtonOn = BitmapFactory.decodeResource(context.getResources(), R.drawable.btn_star_on);
-        zanButtonOff = BitmapFactory.decodeResource(context.getResources(), R.drawable.btn_star_off);
+        zanButtonOn = BitmapFactory.decodeResource(context.getResources(), R.mipmap.btn_star_on);
+        zanButtonOff = BitmapFactory.decodeResource(context.getResources(), R.mipmap.btn_star_off);
         imgDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.default_image);
         viewCoordinateHelper = new ViewCoordinateHelper();
     }
