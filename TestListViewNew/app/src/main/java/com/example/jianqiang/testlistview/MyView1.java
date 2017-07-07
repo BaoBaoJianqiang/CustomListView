@@ -14,9 +14,9 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 
 import com.example.jianqiang.testlistview.awares.IResultListener;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
@@ -42,18 +42,17 @@ public class MyView1 extends View implements ItemViewAware<News> {
     private ZanContentHelper zanContentHelper;    //记录"赞"相关内容的参数
     int lastTotalHeight = 0;//记录上次绘制时的cell总高度
     boolean isDrawRequestFromZanAction = false;//标识新一次的onDraw事件是否由赞事件发起，onDraw结束后需要重置为false
-    Bitmap zanImg, zanButtonOff, zanButtonOn, imgDefault, avatorImg, articleImg, listImg;
+    Bitmap zanImg, zanButtonOff, zanButtonOn, imgDefault, avatorImg, articleImg, listDefault;
     Context mContext;
     OnItemViewClickedListener<News> mOnItemViewClickedListener;
     private ItemViewLayoutConfig.ConfigBuilder mBuilder;
     private int contentWidth;//绘制区域的宽度
     private int allImageHeight;//图片的累计高度
     //用于图片列表
-//    ImageView[] imageViews;
-
+    SparseArray<Bitmap> listImg = new SparseArray<>();
     //行间距
     int cellMargin = 20;
-
+    private int count;
 
     public MyView1(Context context) {
         super(context);
@@ -65,6 +64,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
         zanButtonOn = BitmapFactory.decodeResource(context.getResources(), R.mipmap.btn_star_on);
         zanButtonOff = BitmapFactory.decodeResource(context.getResources(), R.mipmap.btn_star_off);
         imgDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.default_image);
+        listDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.list_default);
         viewCoordinateHelper = new ViewCoordinateHelper();
     }
 
@@ -77,7 +77,10 @@ public class MyView1 extends View implements ItemViewAware<News> {
         this.news = news;
         zanContentHelper = new ZanContentHelper(this.news.preferList);
         if (news.imageList != null) {
-//            imageViews = new ImageView[news.imageList.size()];
+            for (int i = 0; i < news.imageList.size(); i++) {
+                listImg.put(i, listDefault);
+            }
+
         }
     }
 
@@ -85,7 +88,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
     public boolean triggerNetworkJob(final ListAdapterAware adapter, final int position) {
         //获取人物头像
         Uri uri = Uri.parse(news.avator);
-        FrescoUtils.downloadBitmap(uri, mContext, new IResultListener() {
+        FrescoUtils.downloadBitmap(uri, null, mContext, new IResultListener() {
             @Override
             public void onSuccess(Bitmap bitmap) {
                 avatorImg = bitmap;
@@ -106,7 +109,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
         //获取文章图片
         if (news.article != null) {
             Uri uri2 = Uri.parse(news.article.imageUrl);
-            FrescoUtils.downloadBitmap(uri2, mContext, new IResultListener() {
+            FrescoUtils.downloadBitmap(uri2, null, mContext, new IResultListener() {
                 @Override
                 public void onSuccess(Bitmap bitmap) {
                     articleImg = bitmap;
@@ -128,27 +131,24 @@ public class MyView1 extends View implements ItemViewAware<News> {
         //获取图片列表
         if (news.imageList != null) {
             for (int i = 0; i < news.imageList.size(); i++) {
-                final int[] count = new int[1];
                 Uri imageUri = Uri.parse(news.imageList.get(i).smallImageUrl);
-                FrescoUtils.downloadBitmap(imageUri, mContext, new IResultListener() {
+                final View targetView = new View(getContext());
+                targetView.setTag(i);
+                FrescoUtils.downloadBitmap(imageUri, targetView, mContext, new IResultListener() {
                     @Override
                     public void onSuccess(Bitmap bitmap) {
-
-                        ImageView imageView = new ImageView(mContext);
-                        imageView.setTag(bitmap);
-//                        imageViews[count[0]++] = imageView;
-                        listImg = bitmap;
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                                invalidate();
-                            }
-                        });
+                        count++;
+                        int tag = (int) targetView.getTag();
+                        listImg.put(tag, bitmap);
+                        if (listImg.size() == news.imageList.size())
+                            postInvalidate();
                     }
 
                     @Override
                     public void onFail() {
-
+                        count++;
+                        if (listImg.size() == news.imageList.size())
+                            invalidate();
                     }
                 });
             }
@@ -217,7 +217,6 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
         if (newPreferContentHeight == zanContentHelper.lastZanContentHeight) {
             zanContentHelper.isZanContentHeightChanged = false;
-
             invalidate();
         } else {
             zanContentHelper.isZanContentHeightChanged = true;
@@ -271,11 +270,11 @@ public class MyView1 extends View implements ItemViewAware<News> {
         if (news.imageList != null) {
             int length = news.imageList.size();
             if (length > 0 && length < 4)
-                imageTotalHeight = listImg.getWidth();
+                imageTotalHeight = listDefault.getWidth();
             else if (length < 7)
-                imageTotalHeight = listImg.getWidth() * 2 + mBuilder.getImageSpace();
+                imageTotalHeight = listDefault.getWidth() * 2 + mBuilder.getImageSpace();
             else
-                imageTotalHeight = listImg.getWidth() * 3 + mBuilder.getImageSpace() * 2;
+                imageTotalHeight = listDefault.getWidth() * 3 + mBuilder.getImageSpace() * 2;
             allImageHeight = imageTotalHeight;
             totalHeight += imageTotalHeight;
             lineCount++;
@@ -305,17 +304,16 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        int leftMargin = imgDefault.getWidth() + mBuilder.getImageSpace();//文字左边距
+        int leftMargin = imgDefault.getWidth() + mBuilder.getImageSpace() + mBuilder.getLineMargin();//文字左边距
         int startY = 0;
-
+        Log.d("width---->", String.valueOf(listDefault.getWidth()));
         //头像
         if (avatorImg != null) {
-            canvas.drawBitmap(avatorImg, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
+            canvas.drawBitmap(resizeBitmap(avatorImg, (float) (imgDefault.getWidth()) / avatorImg.getWidth()), mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
         } else {
             canvas.drawBitmap(imgDefault, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
-        }
-        canvas.drawBitmap(imgDefault, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
 
+        }
         //人名
         textPaint.setTextSize(mBuilder.getNameSize());
         textPaint.setColor(Color.BLUE);
@@ -345,21 +343,21 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
             paint.setTextSize(mBuilder.getArticleFontSize());
             paint.setColor(Color.BLACK);//
-            smartDrawText(canvas, textPaint, news.article.title, contentWidth, leftMargin+avatorImg.getWidth()+mBuilder.getLineMargin() , startY);
+            smartDrawText(canvas, textPaint, news.article.title, contentWidth, leftMargin + avatorImg.getWidth() + mBuilder.getLineMargin(), startY);
             startY += articleImg.getHeight() + mBuilder.getLineMargin();
         }
 
         //图片列表
         if (news.imageList != null) {
             for (int i = 0; i < news.imageList.size(); i++) {
-                int x = leftMargin + (i % 3) * (listImg.getWidth() + mBuilder.getImageSpace());
-                int y = startY + (i / 3) * (listImg.getWidth() + mBuilder.getImageSpace());
+                int x = leftMargin + (i % 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
+                int y = startY + (i / 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
 
                 //这些代码，需要fat修改一下，从服务器下载
-                if (listImg != null) {
-                    canvas.drawBitmap(listImg, x, y, paint);
+                if (listImg.get(i) != null) {
+                    canvas.drawBitmap(resizeBitmap(listImg.get(i), (float) (listDefault.getWidth()) / listImg.get(i).getWidth()), x, y, paint);
                 } else {
-                    canvas.drawBitmap(imgDefault, x, y, paint);
+                    canvas.drawBitmap(listDefault, x, y, paint);
                 }
             }
             //累加图片列表的高度，从而为了绘制下一行
@@ -416,6 +414,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
     }
 
     Bitmap resizeBitmap(Bitmap bitmap, float scale) {
+        Log.d("scale---->", String.valueOf(scale));
         // Matrix类进行图片处理（缩小或者旋转）
         Matrix matrix = new Matrix();
         // 缩小一倍
