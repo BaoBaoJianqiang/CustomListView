@@ -7,8 +7,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.pulltorefresh.PullToRefreshBase;
 import com.example.jianqiang.testlistview.pulltorefresh.PullToRefreshListView;
+import com.example.jianqiang.testlistview.utils.Utils;
 
 public class MainActivity extends AppCompatActivity
 {

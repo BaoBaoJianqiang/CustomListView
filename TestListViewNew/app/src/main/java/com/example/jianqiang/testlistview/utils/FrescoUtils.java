@@ -1,4 +1,4 @@
-package com.example.jianqiang.testlistview;
+package com.example.jianqiang.testlistview.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;

@@ -11,6 +11,7 @@ import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ItemViewFactoryAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
+import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.helpers.DefaultItemViewFactory;
 
 import java.util.List;

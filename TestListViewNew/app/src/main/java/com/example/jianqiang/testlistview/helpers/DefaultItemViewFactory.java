@@ -7,7 +7,7 @@ import android.support.v4.util.ArrayMap;
 import android.view.View;
 
 import com.example.jianqiang.testlistview.MyView1;
-import com.example.jianqiang.testlistview.News;
+import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ItemViewFactoryAware;
 import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;

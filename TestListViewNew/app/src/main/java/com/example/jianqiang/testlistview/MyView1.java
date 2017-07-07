@@ -22,16 +22,19 @@ import com.example.jianqiang.testlistview.awares.IResultListener;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
+import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.executor.ExecutorUtils;
 import com.example.jianqiang.testlistview.helpers.AccountHelper;
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 import com.example.jianqiang.testlistview.helpers.ViewCoordinateHelper;
 import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
+import com.example.jianqiang.testlistview.utils.FrescoUtils;
+import com.example.jianqiang.testlistview.utils.Utils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import static com.example.jianqiang.testlistview.Utils.smartDrawText;
+import static com.example.jianqiang.testlistview.utils.Utils.smartDrawText;
 
 @SuppressWarnings("unchecked")
 public class MyView1 extends View implements ItemViewAware<News> {

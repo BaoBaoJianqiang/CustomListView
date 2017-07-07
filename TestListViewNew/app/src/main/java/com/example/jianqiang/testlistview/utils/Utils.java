@@ -1,4 +1,4 @@
-package com.example.jianqiang.testlistview;
+package com.example.jianqiang.testlistview.utils;
 
 import android.graphics.Canvas;
 import android.support.annotation.NonNull;
@@ -6,6 +6,10 @@ import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 
+import com.example.jianqiang.testlistview.entitiy.ImageEntity;
+import com.example.jianqiang.testlistview.entitiy.Article;
+import com.example.jianqiang.testlistview.entitiy.Comment;
+import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.example.jianqiang.testlistview;
+package com.example.jianqiang.testlistview.entitiy;
 
 import java.util.List;
 
