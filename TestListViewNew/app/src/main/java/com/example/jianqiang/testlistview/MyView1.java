@@ -10,34 +10,40 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Handler;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.jianqiang.testlistview.awares.IResultListener;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
 import com.example.jianqiang.testlistview.entitiy.News;
-import com.example.jianqiang.testlistview.executor.ExecutorUtils;
 import com.example.jianqiang.testlistview.helpers.AccountHelper;
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 import com.example.jianqiang.testlistview.helpers.ViewCoordinateHelper;
 import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
+import com.example.jianqiang.testlistview.utils.ClipboardUtils;
 import com.example.jianqiang.testlistview.utils.FrescoUtils;
 import com.example.jianqiang.testlistview.utils.Utils;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 import static com.example.jianqiang.testlistview.utils.Utils.smartDrawText;
 
 @SuppressWarnings("unchecked")
 public class MyView1 extends View implements ItemViewAware<News> {
+    private static final int LONG_PRESS_INTERVAL = 750;
+
     private Paint paint;
     private TextPaint textPaint;
     private News news;
@@ -51,6 +57,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
     private ItemViewLayoutConfig.ConfigBuilder mBuilder;
     private int contentWidth;//绘制区域的宽度
     private int allImageHeight;//图片的累计高度
+    private Handler touchEventHandler;
     //用于图片列表
     SparseArray<Bitmap> listImg = new SparseArray<>();
     //行间距
@@ -62,12 +69,15 @@ public class MyView1 extends View implements ItemViewAware<News> {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
+        touchEventHandler = new Handler();
         mContext = context;
         zanImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.zan);
         zanButtonOn = BitmapFactory.decodeResource(context.getResources(), R.mipmap.btn_star_on);
         zanButtonOff = BitmapFactory.decodeResource(context.getResources(), R.mipmap.btn_star_off);
         imgDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.default_image);
         listDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.list_default);
+        articleImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.list_default);
+        avatorImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.default_image);
         viewCoordinateHelper = new ViewCoordinateHelper();
     }
 
@@ -94,13 +104,10 @@ public class MyView1 extends View implements ItemViewAware<News> {
         FrescoUtils.downloadBitmap(uri, null, mContext, new IResultListener() {
             @Override
             public void onSuccess(Bitmap bitmap) {
+                if(bitmap == null) return;
+
                 avatorImg = bitmap;
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        invalidate();
-                    }
-                });
+                postInvalidate();
             }
 
             @Override
@@ -115,13 +122,10 @@ public class MyView1 extends View implements ItemViewAware<News> {
             FrescoUtils.downloadBitmap(uri2, null, mContext, new IResultListener() {
                 @Override
                 public void onSuccess(Bitmap bitmap) {
+                    if(bitmap == null) return;
+
                     articleImg = bitmap;
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            invalidate();
-                        }
-                    });
+                    postInvalidate();
                 }
 
                 @Override
@@ -151,7 +155,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
                     public void onFail() {
                         count++;
                         if (listImg.size() == news.imageList.size())
-                            invalidate();
+                            postInvalidate();
                     }
                 });
             }
@@ -169,23 +173,22 @@ public class MyView1 extends View implements ItemViewAware<News> {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        setMeasuredDimension(measureWidth(widthMeasureSpec), 0);
-        Future<Integer> submit = ExecutorUtils.getDefaultExecutor().submit(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return getTotalHeight();
-            }
-        });
-        try {
-            Integer integer = submit.get();
-            Log.d("value---->", String.valueOf(integer));
-            setMeasuredDimension(measureWidth(widthMeasureSpec), integer);
-            requestLayout();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
+        setMeasuredDimension(measureWidth(widthMeasureSpec), getTotalHeight());
+        //TODO onMeasure中调用requestLayout会引起死循环
+//        Future<Integer> submit = ExecutorUtils.getDefaultExecutor().submit(new Callable<Integer>() {
+//            @Override
+//            public Integer call() throws Exception {
+//                return getTotalHeight();
+//            }
+//        });
+//        try {
+//            Integer integer = submit.get();
+//            Log.d("value---->", String.valueOf(integer));
+//            setMeasuredDimension(measureWidth(widthMeasureSpec), integer);
+//            requestLayout();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     //获取测量宽度，同时设置文字的最大宽度
@@ -220,14 +223,13 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
         if (newPreferContentHeight == zanContentHelper.lastZanContentHeight) {
             zanContentHelper.isZanContentHeightChanged = false;
-            invalidate();
         } else {
             zanContentHelper.isZanContentHeightChanged = true;
 
             zanContentHelper.zanContentHeightDiff = newPreferContentHeight - zanContentHelper.lastZanContentHeight;
-
-            requestLayout();
         }
+
+        requestLayout();
     }
 
     private void zanActionUpdateProcessed() {
@@ -301,7 +303,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
             }
             lineCount++;
         }
-        lastTotalHeight = totalHeight + lineCount * mBuilder.getLineMargin();
+        lastTotalHeight = totalHeight + lineCount * mBuilder.getLineMargin() + cellMargin;
         return totalHeight + mBuilder.getLineMargin() * lineCount + cellMargin;
     }
 
@@ -329,15 +331,15 @@ public class MyView1 extends View implements ItemViewAware<News> {
         textPaint.setTextSize(mBuilder.getContentSize());
         StaticLayout contentLayout = Utils.smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, startY);
         int contentHeight = contentLayout.getHeight();
+        viewCoordinateHelper.setContentRect(leftMargin, startY, leftMargin + contentLayout.getWidth(), startY + contentLayout.getHeight());
         startY += contentHeight + mBuilder.getLineMargin();
 
         //分享文章
         if (news.article != null) {
-            paint.setColor(Color.RED);// 设置灰色
+            paint.setColor(Color.LTGRAY);// 设置灰色
             paint.setStyle(Paint.Style.FILL);//设置填满
-            //TODO 画上矩形之后，位置会向偏移，未找到原因
-//            canvas.drawRect(leftMargin, startY, contentWidth, articleHeight, paint);// 长方形
-            viewCoordinateHelper.setArticleRect(leftMargin, startY, contentWidth, mBuilder.getArticleHeight());
+            canvas.drawRect(leftMargin, startY, leftMargin + contentWidth, startY + mBuilder.getArticleHeight(), paint);// 长方形
+            viewCoordinateHelper.setArticleRect(leftMargin, startY, leftMargin + contentWidth, startY + mBuilder.getArticleHeight());
             if (articleImg != null) {
                 canvas.drawBitmap(articleImg, leftMargin, startY, paint);
             } else {
@@ -430,8 +432,63 @@ public class MyView1 extends View implements ItemViewAware<News> {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
-        if (action == MotionEvent.ACTION_UP) {
-            if (viewCoordinateHelper.isZanClicked((int) event.getX(), (int) event.getY())) {
+        int lastX = (int) event.getX();
+        int lastY = (int) event.getY();
+
+        if (action == MotionEvent.ACTION_DOWN) {
+
+            viewCoordinateHelper.recordDownAction(lastX, lastY);
+
+            if(viewCoordinateHelper.isInContentArea(lastX, lastY))
+            {
+                touchEventHandler.postDelayed(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+
+                        TextView popText = new TextView(mContext);
+                        popText.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+                        popText.setGravity(Gravity.CENTER);
+                        popText.setBackgroundColor(Color.WHITE);
+                        popText.setText("复制");
+
+                        int[] lastDownActionXY = viewCoordinateHelper.getLastDownActionXY();
+
+                        final PopupWindow pw = new PopupWindow(popText, 150, 75);
+                        pw.setTouchable(true);
+                        pw.setOutsideTouchable(true);
+                        pw.showAsDropDown(MyView1.this, lastDownActionXY[0] + 30, -(30 + lastTotalHeight), Gravity.TOP);
+
+                        popText.setOnClickListener(new OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View v)
+                            {
+                                ClipboardUtils.copy(mContext, news.content);
+                                pw.dismiss();
+                                Toast.makeText(mContext, "已复制", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }, LONG_PRESS_INTERVAL);
+            }
+        }
+        else if (action == MotionEvent.ACTION_MOVE) {
+
+            int[] lastDownActionXY = viewCoordinateHelper.getLastDownActionXY();
+
+            if(lastDownActionXY != null && viewCoordinateHelper.isInContentArea(lastDownActionXY[0], lastDownActionXY[1])
+                    && !viewCoordinateHelper.isInContentArea(lastX, lastY))
+            {
+                touchEventHandler.removeCallbacksAndMessages(null);
+            }
+        }
+        else if (action == MotionEvent.ACTION_UP) {
+
+            int[] lastDownActionXY = viewCoordinateHelper.getLastDownActionXY();
+
+            if (viewCoordinateHelper.isInZanArea(lastX, lastY)) {
                 if (zanContentHelper.isZan) {
                     zanContentHelper.removeZan(AccountHelper.getInstance().getAccountName());
                 } else {
@@ -439,17 +496,22 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 }
 
                 updateCellAfterZanAction();
-            } else if (viewCoordinateHelper.isArticleClicked((int) event.getX(), (int) event.getY())) {
+            } else if (viewCoordinateHelper.isInArticleArea(lastY, lastY)) {
                 Intent intent = new Intent();
                 intent.setAction("android.intent.action.VIEW");
                 Uri url = Uri.parse(news.article.articleUrl);
                 intent.setData(url);
                 getContext().startActivity(intent);
-            } else {
+            } else if (lastDownActionXY != null && !viewCoordinateHelper.isInContentArea(lastDownActionXY[0], lastDownActionXY[1])){
                 if (mOnItemViewClickedListener != null) {
                     mOnItemViewClickedListener.onItemClicked(news);
                 }
             }
+
+            touchEventHandler.removeCallbacksAndMessages(null);
+        }
+        else {
+            touchEventHandler.removeCallbacksAndMessages(null);
         }
 
         return true;

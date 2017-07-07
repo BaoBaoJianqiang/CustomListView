@@ -7,11 +7,27 @@ public class ViewCoordinateHelper
     private static final int padding = 20;
     private Rect zanButtonRect;
     private Rect articleRect;
+    private Rect contentRect;
+    private int[] lastDownActionXY;
 
     private boolean isRectExist(Rect rect, int left, int top, int right, int bottom)
     {
         return rect != null && rect.left == left && rect.top == top
                 && rect.right == right && rect.bottom == bottom;
+    }
+
+    public void recordDownAction(int x, int y)
+    {
+        if(lastDownActionXY == null) lastDownActionXY = new int[2];
+
+        lastDownActionXY[0] = x;
+
+        lastDownActionXY[1] = y;
+    }
+
+    public int[] getLastDownActionXY()
+    {
+        return lastDownActionXY;
     }
 
     public void setZanButtonRect(int left, int top, int width, int height)
@@ -22,7 +38,7 @@ public class ViewCoordinateHelper
         }
     }
 
-    public boolean isZanClicked(int x, int y)
+    public boolean isInZanArea(int x, int y)
     {
         if(zanButtonRect == null) return false;
 
@@ -38,11 +54,27 @@ public class ViewCoordinateHelper
         }
     }
 
-    public boolean isArticleClicked(int x, int y)
+    public boolean isInArticleArea(int x, int y)
     {
         if(articleRect == null) return false;
 
         return x >= articleRect.left && x <= articleRect.right
                 && y >= articleRect.top && y <= articleRect.bottom;
+    }
+
+    public void setContentRect(int left, int top, int right, int bottom)
+    {
+        if(!isRectExist(contentRect, left, top, right, bottom))
+        {
+            contentRect = new Rect(left, top, right, bottom);
+        }
+    }
+
+    public boolean isInContentArea(int x, int y)
+    {
+        if(contentRect == null) return false;
+
+        return x >= contentRect.left && x <= contentRect.right
+                && y >= contentRect.top && y <= contentRect.bottom;
     }
 }
