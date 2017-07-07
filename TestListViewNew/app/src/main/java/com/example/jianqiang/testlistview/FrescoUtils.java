@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.util.Log;
+import android.view.View;
 
 import com.example.jianqiang.testlistview.awares.IResultListener;
 import com.facebook.common.executors.CallerThreadExecutor;
@@ -28,13 +30,14 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder;
 public class FrescoUtils {
 
 
-    public static void downloadBitmap(Uri uri, Context context, final IResultListener listener) {
+    public static void downloadBitmap(Uri uri, View view, Context context, final IResultListener listener) {
         ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(uri).setProgressiveRenderingEnabled(true).build();
         ImagePipeline imagePipeline = Fresco.getImagePipeline();
         DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, context);
         dataSource.subscribe(new BaseBitmapDataSubscriber() {
             @Override
             public void onNewResultImpl(@Nullable Bitmap bitmap) {
+                Log.d("thread---->", String.valueOf(Thread.currentThread()));
                 listener.onSuccess(bitmap);
 
             }

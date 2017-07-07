@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        adapter = new MyAdapter(this, Utils.generateLoadData(0),null,mPullRefreshListView.getListView());
+        adapter = new MyAdapter(this, Utils.generateLoadData(10),null,mPullRefreshListView.getListView());
 
         adapter.setOnListItemClickedListener(new MyAdapter.OnListItemClickedListener()
         {
