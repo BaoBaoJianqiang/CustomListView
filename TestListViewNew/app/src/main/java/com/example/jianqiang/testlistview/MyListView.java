@@ -9,11 +9,14 @@ import android.widget.ListView;
 
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 
 public class MyListView extends ListView
 {
+    private  RxAppCompatActivity mRxAppCompatActivity;
     private SparseArray<View> mArrayList;
+
 
     public MyListView(Context context)
     {
@@ -43,6 +46,10 @@ public class MyListView extends ListView
         init();
     }
 
+    public  void setRxAppCompatActivity(RxAppCompatActivity rxAppCompatActivity) {
+        mRxAppCompatActivity = rxAppCompatActivity;
+    }
+
     private void init()
     {
         mArrayList = new SparseArray<>();
@@ -65,7 +72,7 @@ public class MyListView extends ListView
 
                         if(itemView instanceof ItemViewAware)
                         {
-                            boolean loadSuccess= ((ItemViewAware) itemView).triggerNetworkJob((ListAdapterAware) getAdapter(),i);
+                            boolean loadSuccess= ((ItemViewAware) itemView).triggerNetworkJob((ListAdapterAware) getAdapter(),i, mRxAppCompatActivity);
                         }
                     }
                 }

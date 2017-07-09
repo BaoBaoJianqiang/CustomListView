@@ -22,17 +22,30 @@ import com.example.jianqiang.testlistview.awares.IResultListener;
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
+import com.example.jianqiang.testlistview.entitiy.ImageBean;
+import com.example.jianqiang.testlistview.entitiy.ImageEntity;
 import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.executor.ExecutorUtils;
 import com.example.jianqiang.testlistview.helpers.AccountHelper;
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 import com.example.jianqiang.testlistview.helpers.ViewCoordinateHelper;
 import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
+import com.example.jianqiang.testlistview.utils.DownloadUtils;
 import com.example.jianqiang.testlistview.utils.FrescoUtils;
 import com.example.jianqiang.testlistview.utils.Utils;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.functions.Func2;
+import rx.schedulers.Schedulers;
 
 import static com.example.jianqiang.testlistview.utils.Utils.smartDrawText;
 
@@ -53,6 +66,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
     private int allImageHeight;//图片的累计高度
     //用于图片列表
     SparseArray<Bitmap> listImg = new SparseArray<>();
+    Map<Object, Bitmap> mBitmapMap = new HashMap<>();
     //行间距
     int cellMargin = 20;
     private int count;
@@ -88,7 +102,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
     }
 
     @Override
-    public boolean triggerNetworkJob(final ListAdapterAware adapter, final int position) {
+    public boolean triggerNetworkJob(final ListAdapterAware adapter, final int position, RxAppCompatActivity context) {
         //获取人物头像
         Uri uri = Uri.parse(news.avator);
         FrescoUtils.downloadBitmap(uri, null, mContext, new IResultListener() {
@@ -132,30 +146,51 @@ public class MyView1 extends View implements ItemViewAware<News> {
         }
 
         //获取图片列表
-        if (news.imageList != null) {
-            for (int i = 0; i < news.imageList.size(); i++) {
-                Uri imageUri = Uri.parse(news.imageList.get(i).smallImageUrl);
-                final View targetView = new View(getContext());
-                targetView.setTag(i);
-                FrescoUtils.downloadBitmap(imageUri, targetView, mContext, new IResultListener() {
-                    @Override
-                    public void onSuccess(Bitmap bitmap) {
-                        count++;
-                        int tag = (int) targetView.getTag();
-                        listImg.put(tag, bitmap);
-                        if (listImg.size() == news.imageList.size())
-                            postInvalidate();
-                    }
 
-                    @Override
-                    public void onFail() {
-                        count++;
-                        if (listImg.size() == news.imageList.size())
-                            invalidate();
-                    }
-                });
-            }
+        //获取图片列表
+        if (news.imageList != null) {
+            Observable.from(news.imageList)
+                    .flatMap(new Func1<ImageEntity, Observable<ImageBean>>() {
+
+                        @Override
+                        public Observable<ImageBean> call(ImageEntity imageEntity) {
+
+                            Observable<ImageEntity> imageEntityObservable = Observable.just(imageEntity);
+                            DownloadUtils downloadUtils = new DownloadUtils();
+                            Observable<Bitmap> fileObservable = downloadUtils.downloadIamge(imageEntity.smallImageUrl);
+                            return Observable.zip(imageEntityObservable, fileObservable, new Func2<ImageEntity, Bitmap, ImageBean>() {
+                                @Override
+                                public ImageBean call(ImageEntity imageEntity, Bitmap bitmap) {
+                                    return new ImageBean(imageEntity.smallImageUrl, bitmap);
+                                }
+                            });
+                        }
+                    }).subscribeOn(Schedulers.io())
+                    .compose(context.<ImageBean>bindToLifecycle())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<ImageBean>() {
+                        @Override
+                        public void onCompleted() {
+                            System.out.println("lip onCompleted");
+                            postInvalidate();
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+
+                        }
+
+                        @Override
+                        public void onNext(ImageBean imageBean) {
+                            //                                    listImg.put(imageBean,imageBean.bitmap);
+                            mBitmapMap.put(imageBean.getTag(), imageBean.getBitmap());
+                            System.out.println("lip onNext"+imageBean);
+
+                        }
+                    });
+
         }
+
 
         return true;
     }
@@ -352,13 +387,14 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
         //图片列表
         if (news.imageList != null) {
+            System.out.println("lip ondraw " + news.imageList.size());
             for (int i = 0; i < news.imageList.size(); i++) {
                 int x = leftMargin + (i % 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
                 int y = startY + (i / 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
 
                 //这些代码，需要fat修改一下，从服务器下载
-                if (listImg.get(i) != null) {
-                    canvas.drawBitmap(resizeBitmap(listImg.get(i), (float) (listDefault.getWidth()) / listImg.get(i).getWidth()), x, y, paint);
+                if (mBitmapMap.get(news.imageList.get(i).smallImageUrl) != null) {
+                    canvas.drawBitmap(resizeBitmap(mBitmapMap.get(news.imageList.get(i).smallImageUrl), (float) (listDefault.getWidth()) / mBitmapMap.get(news.imageList.get(i).smallImageUrl).getWidth()), x, y, paint);
                 } else {
                     canvas.drawBitmap(listDefault, x, y, paint);
                 }
