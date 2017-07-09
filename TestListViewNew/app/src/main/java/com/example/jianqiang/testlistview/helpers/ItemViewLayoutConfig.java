@@ -49,7 +49,7 @@ public class ItemViewLayoutConfig implements Serializable {
             rightMargin = (int) context.getResources().getDimension(R.dimen.dp_10);
             imageSize = (int) context.getResources().getDimension(R.dimen.dp_50);
             nameSize = context.getResources().getDimension(R.dimen.sp_10);
-            contentSize = context.getResources().getDimension(R.dimen.sp_11);
+            contentSize = context.getResources().getDimension(R.dimen.sp_10);
             lineMargin = (int) context.getResources().getDimension(R.dimen.dp_3);
             imageSpace = (int) context.getResources().getDimension(R.dimen.dp_3);
             contentWidth = (int) context.getResources().getDimension(R.dimen.dp_167);

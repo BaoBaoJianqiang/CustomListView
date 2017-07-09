@@ -29,10 +29,6 @@ import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 import com.example.jianqiang.testlistview.helpers.ViewCoordinateHelper;
 import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
 import com.example.jianqiang.testlistview.utils.FrescoUtils;
-import com.example.jianqiang.testlistview.utils.Utils;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 import static com.example.jianqiang.testlistview.utils.Utils.smartDrawText;
 
@@ -56,6 +52,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
     //行间距
     int cellMargin = 20;
     private int count;
+    private int bitmapWidth, bitmapHeight;
+    private Bitmap totalBitmap;
 
     public MyView1(Context context) {
         super(context);
@@ -64,10 +62,12 @@ public class MyView1 extends View implements ItemViewAware<News> {
         textPaint.setColor(Color.BLACK);
         mContext = context;
         zanImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.zan);
+        avatorImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.default_image);
         zanButtonOn = BitmapFactory.decodeResource(context.getResources(), R.mipmap.btn_star_on);
         zanButtonOff = BitmapFactory.decodeResource(context.getResources(), R.mipmap.btn_star_off);
         imgDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.default_image);
         listDefault = BitmapFactory.decodeResource(context.getResources(), R.mipmap.list_default);
+        articleImg = BitmapFactory.decodeResource(context.getResources(), R.mipmap.default_image);
         viewCoordinateHelper = new ViewCoordinateHelper();
     }
 
@@ -98,7 +98,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 post(new Runnable() {
                     @Override
                     public void run() {
-                        invalidate();
+                        postInvalidate();
                     }
                 });
             }
@@ -169,24 +169,16 @@ public class MyView1 extends View implements ItemViewAware<News> {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        setMeasuredDimension(measureWidth(widthMeasureSpec), 0);
-        Future<Integer> submit = ExecutorUtils.getDefaultExecutor().submit(new Callable<Integer>() {
+        setMeasuredDimension(measureWidth(widthMeasureSpec), getTotalHeight());
+        ExecutorUtils.getDefaultExecutor().execute(new Runnable() {
             @Override
-            public Integer call() throws Exception {
-                return getTotalHeight();
+            public void run() {
+                createTotalBitmap();
             }
         });
-        try {
-            Integer integer = submit.get();
-            Log.d("value---->", String.valueOf(integer));
-            setMeasuredDimension(measureWidth(widthMeasureSpec), integer);
-            requestLayout();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
 
     }
+
 
     //获取测量宽度，同时设置文字的最大宽度
     private int measureWidth(int widthMeasureSpec) {
@@ -202,7 +194,119 @@ public class MyView1 extends View implements ItemViewAware<News> {
             case MeasureSpec.UNSPECIFIED:
                 break;
         }
+        bitmapWidth = result;
         return result;
+    }
+
+    //子线程中生成一个bitmap
+    private void createTotalBitmap() {
+        Bitmap bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        int leftMargin = imgDefault.getWidth() + mBuilder.getImageSpace() + mBuilder.getLineMargin();//文字左边距
+        int startY = 0;
+        Log.d("width---->", String.valueOf(listDefault.getWidth()));
+        //头像
+        if (avatorImg != null) {
+            canvas.drawBitmap(resizeBitmap(avatorImg, (float) (imgDefault.getWidth()) / avatorImg.getWidth()), mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
+        } else {
+            canvas.drawBitmap(imgDefault, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
+
+        }
+        //人名
+        textPaint.setTextSize(mBuilder.getNameSize());
+        textPaint.setColor(Color.BLUE);
+        StaticLayout staticLayout1 = smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, startY);
+        int height = staticLayout1.getHeight();
+        startY += height + mBuilder.getLineMargin();
+        //内容
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(mBuilder.getContentSize());
+        StaticLayout contentLayout = smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, startY);
+        int contentHeight = contentLayout.getHeight();
+        startY += contentHeight + mBuilder.getLineMargin();
+        //分享文章
+        if (news.article != null) {
+            paint.setColor(Color.RED);// 设置灰色
+            paint.setStyle(Paint.Style.FILL);//设置填满
+            //TODO 画上矩形之后，位置会向偏移，未找到原因
+//            canvas.drawRect(leftMargin, startY, contentWidth, articleHeight, paint);// 长方形
+            viewCoordinateHelper.setArticleRect(leftMargin, startY, contentWidth, mBuilder.getArticleHeight());
+            if (articleImg != null) {
+                canvas.drawBitmap(articleImg, leftMargin, startY, paint);
+            } else {
+                canvas.drawBitmap(imgDefault, leftMargin, startY, paint);
+            }
+
+            paint.setTextSize(mBuilder.getArticleFontSize());
+            paint.setColor(Color.BLACK);//
+            smartDrawText(canvas, textPaint, news.article.title, contentWidth, leftMargin + avatorImg.getWidth() + mBuilder.getLineMargin(), startY);
+            startY += articleImg.getHeight() + mBuilder.getLineMargin();
+        }
+
+        //图片列表
+        if (news.imageList != null) {
+            for (int i = 0; i < news.imageList.size(); i++) {
+                int x = leftMargin + (i % 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
+                int y = startY + (i / 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
+                //这些代码，需要fat修改一下，从服务器下载
+                if (listImg.get(i) != null) {
+                    canvas.drawBitmap(resizeBitmap(listImg.get(i), (float) (listDefault.getWidth()) / listImg.get(i).getWidth()), x, y, paint);
+                } else {
+                    canvas.drawBitmap(listDefault, x, y, paint);
+                }
+            }
+            //累加图片列表的高度，从而为了绘制下一行
+            startY += allImageHeight + mBuilder.getLineMargin();
+        }
+
+        //发布时间
+        textPaint.setTextSize(mBuilder.getNameSize());
+        int textWidth = (int) textPaint.measureText(news.showtime);
+        textPaint.setColor(Color.GRAY);
+        Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
+        int timeHeight = (int) (fontMetrics.bottom - fontMetrics.top);
+        int baseY = (int) (startY + timeHeight - fontMetrics.bottom);
+        canvas.drawText(news.showtime, leftMargin, baseY, textPaint);
+        startY += mBuilder.getLineMargin();
+        //评论button
+        int zanButtonLeft = textWidth + leftMargin + mBuilder.getLineMargin();
+        if (zanContentHelper.isZan) {
+            viewCoordinateHelper.setZanButtonRect(zanButtonLeft, startY, zanButtonOn.getWidth(), zanButtonOn.getHeight());
+            canvas.drawBitmap(zanButtonOn, zanButtonLeft, startY, paint);
+        } else {
+            viewCoordinateHelper.setZanButtonRect(zanButtonLeft, startY, zanButtonOff.getWidth(), zanButtonOff.getHeight());
+
+            canvas.drawBitmap(zanButtonOff, zanButtonLeft, startY, paint);
+        }
+        startY += zanButtonOn.getHeight() + mBuilder.getLineMargin();
+        //点赞button
+        int hasZan = 1;
+        if (!TextUtils.isEmpty(zanContentHelper.getComposedPreferString())) {
+            //点赞图标
+            Log.d("width--->", String.valueOf(zanImg.getWidth()));
+            canvas.drawBitmap(zanImg, leftMargin, startY, paint);
+            textPaint.setTextSize(mBuilder.getNameSize());
+            textPaint.setColor(Color.BLUE);
+            zanContentHelper.lastZanContentHeight = smartDrawText(canvas, textPaint, zanContentHelper.getComposedPreferString(), contentWidth - zanImg.getWidth(), leftMargin + zanImg.getWidth(), startY).getHeight();
+            startY += zanContentHelper.lastZanContentHeight + mBuilder.getLineMargin();
+        } else {
+            hasZan = 0;
+            zanContentHelper.lastZanContentHeight = 0;
+        }
+        startY += mBuilder.getLineMargin();
+        zanActionUpdateProcessed();
+        //评论
+        if (news.commentList != null) {
+            for (int i = 0; i < news.commentList.size(); i++) {
+                textPaint.setTextSize(mBuilder.getNameSize());
+                textPaint.setColor(Color.BLACK);
+                StaticLayout staticLayout = smartDrawText(canvas, textPaint, news.commentList.get(i).author + ": " + news.commentList.get(i).content, contentWidth, leftMargin, startY);
+                int height2 = staticLayout.getHeight();
+                startY += height2;
+            }
+        }
+        totalBitmap = bitmap;
+        postInvalidate();//重新绘制View
     }
 
     private void updateCellAfterZanAction() {
@@ -213,7 +317,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
         String composedPreferString = zanContentHelper.getComposedPreferString();
 
         int newPreferContentHeight = TextUtils.isEmpty(composedPreferString) ? 0 :
-                Utils.smartDrawText(canvas, textPaint, zanContentHelper.getComposedPreferString(),
+                smartDrawText(canvas, textPaint, zanContentHelper.getComposedPreferString(),
                         contentWidth, leftMargin + zanImg.getWidth() + mBuilder.getContentSize(), 0).getHeight();
 
         isDrawRequestFromZanAction = true;
@@ -232,7 +336,6 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
     private void zanActionUpdateProcessed() {
         zanContentHelper.isZanContentHeightChanged = false;
-
         isDrawRequestFromZanAction = false;
     }
 
@@ -250,10 +353,10 @@ public class MyView1 extends View implements ItemViewAware<News> {
         //人名的高度
         textPaint.setTextSize(mBuilder.getNameSize());
 
-        totalHeight += Utils.smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, totalHeight).getHeight();
+        totalHeight += smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, totalHeight).getHeight();
         //内容的高度
         textPaint.setTextSize(mBuilder.getContentSize());
-        totalHeight += Utils.smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, totalHeight).getHeight();
+        totalHeight += smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, totalHeight).getHeight();
         lineCount++;
         //发布时间的高度
         textPaint.setTextSize(mBuilder.getContentSize());
@@ -287,7 +390,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
         if (news.preferList != null) {
             textPaint.setTextSize(mBuilder.getNameSize());
             textPaint.setColor(Color.BLUE);
-            totalHeight += Utils.smartDrawText(canvas, textPaint, zanContentHelper.getComposedPreferString(), contentWidth, leftMargin + zanImg.getWidth() + mBuilder.getLineMargin(),
+            totalHeight += smartDrawText(canvas, textPaint, zanContentHelper.getComposedPreferString(), contentWidth, leftMargin + zanImg.getWidth() + mBuilder.getLineMargin(),
                     totalHeight).getHeight();
             lineCount++;
 
@@ -297,122 +400,19 @@ public class MyView1 extends View implements ItemViewAware<News> {
             for (int i = 0; i < news.commentList.size(); i++) {
                 textPaint.setTextSize(mBuilder.getNameSize());
                 textPaint.setColor(Color.BLACK);
-                totalHeight += Utils.smartDrawText(canvas, textPaint, news.commentList.get(i).author + ": " + news.commentList.get(i).content, contentWidth, leftMargin, totalHeight).getHeight();
+                totalHeight += smartDrawText(canvas, textPaint, news.commentList.get(i).author + ": " + news.commentList.get(i).content, contentWidth, leftMargin, totalHeight).getHeight();
             }
             lineCount++;
         }
         lastTotalHeight = totalHeight + lineCount * mBuilder.getLineMargin();
-        return totalHeight + mBuilder.getLineMargin() * lineCount + cellMargin;
+        bitmapHeight = totalHeight + mBuilder.getLineMargin() * lineCount + cellMargin;
+        return bitmapHeight;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        int leftMargin = imgDefault.getWidth() + mBuilder.getImageSpace() + mBuilder.getLineMargin();//文字左边距
-        int startY = 0;
-        Log.d("width---->", String.valueOf(listDefault.getWidth()));
-        //头像
-        if (avatorImg != null) {
-            canvas.drawBitmap(resizeBitmap(avatorImg, (float) (imgDefault.getWidth()) / avatorImg.getWidth()), mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
-        } else {
-            canvas.drawBitmap(imgDefault, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
-
-        }
-        //人名
-        textPaint.setTextSize(mBuilder.getNameSize());
-        textPaint.setColor(Color.BLUE);
-        StaticLayout staticLayout1 = Utils.smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, startY);
-        int height = staticLayout1.getHeight();
-        startY += height + mBuilder.getLineMargin();
-
-        //内容
-        textPaint.setColor(Color.BLACK);
-        textPaint.setTextSize(mBuilder.getContentSize());
-        StaticLayout contentLayout = Utils.smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, startY);
-        int contentHeight = contentLayout.getHeight();
-        startY += contentHeight + mBuilder.getLineMargin();
-
-        //分享文章
-        if (news.article != null) {
-            paint.setColor(Color.RED);// 设置灰色
-            paint.setStyle(Paint.Style.FILL);//设置填满
-            //TODO 画上矩形之后，位置会向偏移，未找到原因
-//            canvas.drawRect(leftMargin, startY, contentWidth, articleHeight, paint);// 长方形
-            viewCoordinateHelper.setArticleRect(leftMargin, startY, contentWidth, mBuilder.getArticleHeight());
-            if (articleImg != null) {
-                canvas.drawBitmap(articleImg, leftMargin, startY, paint);
-            } else {
-                canvas.drawBitmap(imgDefault, leftMargin, startY, paint);
-            }
-
-            paint.setTextSize(mBuilder.getArticleFontSize());
-            paint.setColor(Color.BLACK);//
-            smartDrawText(canvas, textPaint, news.article.title, contentWidth, leftMargin + avatorImg.getWidth() + mBuilder.getLineMargin(), startY);
-            startY += articleImg.getHeight() + mBuilder.getLineMargin();
-        }
-
-        //图片列表
-        if (news.imageList != null) {
-            for (int i = 0; i < news.imageList.size(); i++) {
-                int x = leftMargin + (i % 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
-                int y = startY + (i / 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
-
-                //这些代码，需要fat修改一下，从服务器下载
-                if (listImg.get(i) != null) {
-                    canvas.drawBitmap(resizeBitmap(listImg.get(i), (float) (listDefault.getWidth()) / listImg.get(i).getWidth()), x, y, paint);
-                } else {
-                    canvas.drawBitmap(listDefault, x, y, paint);
-                }
-            }
-            //累加图片列表的高度，从而为了绘制下一行
-            startY += allImageHeight + mBuilder.getLineMargin();
-        }
-
-        //发布时间
-        textPaint.setTextSize(mBuilder.getNameSize());
-        int textWidth = (int) textPaint.measureText(news.showtime);
-        textPaint.setColor(Color.GRAY);
-        Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
-        int timeHeight = (int) (fontMetrics.bottom - fontMetrics.top);
-        int baseY = (int) (startY + timeHeight - fontMetrics.bottom);
-        canvas.drawText(news.showtime, leftMargin, baseY, textPaint);
-        //点赞button
-        int zanButtonLeft = textWidth + leftMargin + mBuilder.getLineMargin();
-        if (zanContentHelper.isZan) {
-            viewCoordinateHelper.setZanButtonRect(zanButtonLeft, startY, zanButtonOn.getWidth(), zanButtonOn.getHeight());
-            canvas.drawBitmap(zanButtonOn, zanButtonLeft, startY, paint);
-        } else {
-            viewCoordinateHelper.setZanButtonRect(zanButtonLeft, startY, zanButtonOff.getWidth(), zanButtonOff.getHeight());
-
-            canvas.drawBitmap(zanButtonOff, zanButtonLeft, startY, paint);
-        }
-        startY += zanButtonOn.getHeight();
-
-        //点赞
-        int hasZan = 1;
-        if (!TextUtils.isEmpty(zanContentHelper.getComposedPreferString())) {
-            //点赞图标
-            canvas.drawBitmap(zanImg, leftMargin, startY, paint);
-            textPaint.setTextSize(mBuilder.getNameSize());
-            textPaint.setColor(Color.BLUE);
-            zanContentHelper.lastZanContentHeight = Utils.smartDrawText(canvas, textPaint, zanContentHelper.getComposedPreferString(), contentWidth - zanImg.getWidth(), leftMargin + zanImg.getWidth(), startY).getHeight();
-            startY += zanContentHelper.lastZanContentHeight + mBuilder.getLineMargin();
-        } else {
-            hasZan = 0;
-            zanContentHelper.lastZanContentHeight = 0;
-        }
-        startY += mBuilder.getLineMargin();
-        zanActionUpdateProcessed();
-        //评论
-        if (news.commentList != null) {
-            for (int i = 0; i < news.commentList.size(); i++) {
-                textPaint.setTextSize(mBuilder.getNameSize());
-                textPaint.setColor(Color.BLACK);
-                StaticLayout staticLayout = Utils.smartDrawText(canvas, textPaint, news.commentList.get(i).author + ": " + news.commentList.get(i).content, contentWidth, leftMargin, startY);
-                int height2 = staticLayout.getHeight();
-                startY += height2;
-            }
-        }
-
+        if (totalBitmap != null)
+            canvas.drawBitmap(totalBitmap, 0, 0, paint);
 
     }
 
