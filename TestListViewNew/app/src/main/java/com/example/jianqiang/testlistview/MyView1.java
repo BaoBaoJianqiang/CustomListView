@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.net.Uri;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -29,6 +30,8 @@ import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
 import com.example.jianqiang.testlistview.helpers.ViewCoordinateHelper;
 import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
 import com.example.jianqiang.testlistview.utils.FrescoUtils;
+
+import java.util.ArrayList;
 
 import static com.example.jianqiang.testlistview.utils.Utils.smartDrawText;
 
@@ -53,7 +56,14 @@ public class MyView1 extends View implements ItemViewAware<News> {
     int cellMargin = 20;
     private int count;
     private int bitmapWidth, bitmapHeight;
-    private Bitmap totalBitmap;
+    private Bitmap totalBitmap, drawbitMap;
+    private Point mArticlePoint = new Point(0, 0);
+    private Point mAvtorPonint = new Point(0, 0);
+    private SparseArray<Point> mListPoints = new SparseArray<>();
+    private SparseArray<Point> mAvtorPoints = new SparseArray<>();
+    private SparseArray<Point> mNewsPoints = new SparseArray<>();
+    private volatile int currentTag = -1;//0:头像；1:标题;2:列表
+    private ArrayList<Integer> mArrayList = new ArrayList<>();
 
     public MyView1(Context context) {
         super(context);
@@ -79,12 +89,14 @@ public class MyView1 extends View implements ItemViewAware<News> {
             mBuilder = layoutConfig.getBuilder();
         this.news = news;
         zanContentHelper = new ZanContentHelper(this.news.preferList);
+        //给图片列表一个默认的图片
         if (news.imageList != null) {
             for (int i = 0; i < news.imageList.size(); i++) {
                 listImg.put(i, listDefault);
             }
-
         }
+        getTotalHeight();
+
     }
 
     @Override
@@ -95,12 +107,9 @@ public class MyView1 extends View implements ItemViewAware<News> {
             @Override
             public void onSuccess(Bitmap bitmap) {
                 avatorImg = bitmap;
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        postInvalidate();
-                    }
-                });
+//                currentTag = 0;
+                mAvtorPonint = mAvtorPoints.get(0);
+//                postInvalidate();
             }
 
             @Override
@@ -116,12 +125,10 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 @Override
                 public void onSuccess(Bitmap bitmap) {
                     articleImg = bitmap;
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            invalidate();
-                        }
-                    });
+//                    currentTag = 1;
+//                    mArticlePoint = mNewsPoints.get(0);
+//                    postInvalidate();
+
                 }
 
                 @Override
@@ -143,15 +150,21 @@ public class MyView1 extends View implements ItemViewAware<News> {
                         count++;
                         int tag = (int) targetView.getTag();
                         listImg.put(tag, bitmap);
-                        if (listImg.size() == news.imageList.size())
-                            postInvalidate();
+                        currentTag = 2;
+                        mArrayList.add(tag);
+                        Log.d("tag", "position---->" + tag + "坐标----->" + mListPoints.get(tag).x + "," + mListPoints.get(tag).y);
+                        post(new Runnable() {
+                            @Override
+                            public void run() {
+                                invalidate();
+                            }
+                        });
+
                     }
 
                     @Override
                     public void onFail() {
                         count++;
-                        if (listImg.size() == news.imageList.size())
-                            invalidate();
                     }
                 });
             }
@@ -169,13 +182,16 @@ public class MyView1 extends View implements ItemViewAware<News> {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        currentTag = -1;
         setMeasuredDimension(measureWidth(widthMeasureSpec), getTotalHeight());
-        ExecutorUtils.getDefaultExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-                createTotalBitmap();
-            }
-        });
+        if (totalBitmap == null) {
+            ExecutorUtils.getDefaultExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    createTotalBitmap();
+                }
+            });
+        }
 
     }
 
@@ -207,7 +223,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
         Log.d("width---->", String.valueOf(listDefault.getWidth()));
         //头像
         if (avatorImg != null) {
-            canvas.drawBitmap(resizeBitmap(avatorImg, (float) (imgDefault.getWidth()) / avatorImg.getWidth()), mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
+            Bitmap resizeBitmap = resizeBitmap(avatorImg, (float) (imgDefault.getWidth()) / avatorImg.getWidth());
+            canvas.drawBitmap(resizeBitmap, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
         } else {
             canvas.drawBitmap(imgDefault, mBuilder.getImageSpace(), mBuilder.getImageSpace(), paint);
 
@@ -228,8 +245,6 @@ public class MyView1 extends View implements ItemViewAware<News> {
         if (news.article != null) {
             paint.setColor(Color.RED);// 设置灰色
             paint.setStyle(Paint.Style.FILL);//设置填满
-            //TODO 画上矩形之后，位置会向偏移，未找到原因
-//            canvas.drawRect(leftMargin, startY, contentWidth, articleHeight, paint);// 长方形
             viewCoordinateHelper.setArticleRect(leftMargin, startY, contentWidth, mBuilder.getArticleHeight());
             if (articleImg != null) {
                 canvas.drawBitmap(articleImg, leftMargin, startY, paint);
@@ -250,7 +265,8 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 int y = startY + (i / 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
                 //这些代码，需要fat修改一下，从服务器下载
                 if (listImg.get(i) != null) {
-                    canvas.drawBitmap(resizeBitmap(listImg.get(i), (float) (listDefault.getWidth()) / listImg.get(i).getWidth()), x, y, paint);
+                    Bitmap bitmap1 = resizeBitmap(listImg.get(i), (float) (listDefault.getWidth()) / listImg.get(i).getWidth());
+                    canvas.drawBitmap(bitmap1, x, y, paint);
                 } else {
                     canvas.drawBitmap(listDefault, x, y, paint);
                 }
@@ -341,39 +357,40 @@ public class MyView1 extends View implements ItemViewAware<News> {
 
     //获取总高度
     public int getTotalHeight() {
-        int lineCount = 0;//记录间距
+        int leftMargin = imgDefault.getWidth() + mBuilder.getImageSpace() * 2;//文字左边距
+        //记录头像位置
+        mAvtorPoints.put(0, new Point(mBuilder.getImageSpace(), mBuilder.getImageSpace()));
         if (isDrawRequestFromZanAction && lastTotalHeight > 0) {
             return lastTotalHeight += zanContentHelper.zanContentHeightDiff;
         }
-
-        int leftMargin = imgDefault.getWidth() / 2;//文字左边距
         Canvas canvas = new Canvas();
         int totalHeight = 0;
-
         //人名的高度
         textPaint.setTextSize(mBuilder.getNameSize());
-
         totalHeight += smartDrawText(canvas, textPaint, news.author, contentWidth, leftMargin, totalHeight).getHeight();
+        totalHeight += mBuilder.getLineMargin();
         //内容的高度
         textPaint.setTextSize(mBuilder.getContentSize());
         totalHeight += smartDrawText(canvas, textPaint, news.content, contentWidth, leftMargin, totalHeight).getHeight();
-        lineCount++;
-        //发布时间的高度
-        textPaint.setTextSize(mBuilder.getContentSize());
-        Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
-        int timeHeight = (int) (fontMetrics.bottom - fontMetrics.top);
-        int height = Math.max(timeHeight, zanButtonOn.getHeight());
-        totalHeight += height;
-        lineCount++;
-        Log.e("height------->", String.valueOf(totalHeight));
+        totalHeight += mBuilder.getLineMargin();
         //分享文章
         if (news.article != null) {
+            mNewsPoints.put(0, new Point(leftMargin, totalHeight));
             totalHeight += articleImg.getHeight();
-            lineCount++;
+            totalHeight += mBuilder.getLineMargin();
         }
+
         //分享图片
         int imageTotalHeight = 0;
         if (news.imageList != null) {
+            for (int i = 0; i < news.imageList.size(); i++) {
+                int x = leftMargin + (i % 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
+                int y = totalHeight + (i / 3) * (listDefault.getWidth() + mBuilder.getImageSpace());
+                //这些代码，需要fat修改一下，从服务器下载
+                mListPoints.put(i, new Point(x, y));
+                Log.d("rem--->", String.valueOf(mListPoints.get(i).x));
+
+            }
             int length = news.imageList.size();
             if (length > 0 && length < 4)
                 imageTotalHeight = listDefault.getWidth();
@@ -383,17 +400,23 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 imageTotalHeight = listDefault.getWidth() * 3 + mBuilder.getImageSpace() * 2;
             allImageHeight = imageTotalHeight;
             totalHeight += imageTotalHeight;
-            lineCount++;
+            totalHeight += mBuilder.getLineMargin();
         }
-
+        //发布时间的高度
+        textPaint.setTextSize(mBuilder.getContentSize());
+        Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
+        int timeHeight = (int) (fontMetrics.bottom - fontMetrics.top);
+        int height = Math.max(timeHeight, zanButtonOn.getHeight());
+        totalHeight += height;
+        totalHeight += mBuilder.getLineMargin();
+        Log.e("height------->", String.valueOf(totalHeight));
         //点赞的高度
         if (news.preferList != null) {
             textPaint.setTextSize(mBuilder.getNameSize());
             textPaint.setColor(Color.BLUE);
             totalHeight += smartDrawText(canvas, textPaint, zanContentHelper.getComposedPreferString(), contentWidth, leftMargin + zanImg.getWidth() + mBuilder.getLineMargin(),
                     totalHeight).getHeight();
-            lineCount++;
-
+            totalHeight += mBuilder.getLineMargin();
         }
         //评论的总高度
         if (news.commentList != null) {
@@ -402,18 +425,37 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 textPaint.setColor(Color.BLACK);
                 totalHeight += smartDrawText(canvas, textPaint, news.commentList.get(i).author + ": " + news.commentList.get(i).content, contentWidth, leftMargin, totalHeight).getHeight();
             }
-            lineCount++;
+            totalHeight += mBuilder.getLineMargin();
         }
-        lastTotalHeight = totalHeight + lineCount * mBuilder.getLineMargin();
-        bitmapHeight = totalHeight + mBuilder.getLineMargin() * lineCount + cellMargin;
+        lastTotalHeight = totalHeight;
+        bitmapHeight = totalHeight + cellMargin;
         return bitmapHeight;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (totalBitmap != null)
+        Log.d("p---------->", String.valueOf(mArrayList.size()));
+        if (totalBitmap != null) {
+            Canvas secondCanvas = new Canvas(totalBitmap);
+            switch (currentTag) {
+                case 0:
+                    secondCanvas.drawBitmap(resizeBitmap(avatorImg, (float) (imgDefault.getWidth()) / avatorImg.getWidth()), mAvtorPonint.x, mAvtorPonint.y, paint);
+                    break;
+                case 1:
+                    secondCanvas.drawBitmap(resizeBitmap(articleImg, (float) (imgDefault.getWidth()) / avatorImg.getWidth()), mArticlePoint.x, mArticlePoint.y, paint);
+                    break;
+                case 2:
+//                    Integer integer = mArrayList.get(0);
+//                    mArrayList.remove(0);
+//                    secondCanvas.drawBitmap(resizeBitmap(listImg.get(integer.intValue()), (float) (listDefault.getWidth()) / listImg.get(integer.intValue()).getWidth()), mListPoints.get(integer).x, mListPoints.get(integer).y, paint);
+                    break;
+                default:
+                    break;
+
+            }
             canvas.drawBitmap(totalBitmap, 0, 0, paint);
 
+        }
     }
 
     Bitmap resizeBitmap(Bitmap bitmap, float scale) {

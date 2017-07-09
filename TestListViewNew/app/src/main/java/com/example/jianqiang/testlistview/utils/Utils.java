@@ -36,15 +36,15 @@ public class Utils {
     public static List<News> generateLoadData(int hours) {
         List<News> newsList = new ArrayList<News>();
 
-        newsList.add(genNew1(hours));
-        newsList.add(genNew2(hours));
-        newsList.add(genNew3(hours));
-        newsList.add(genNew4(hours));
-        newsList.add(genNew5(hours));
-        newsList.add(genNew6(hours));
+//        newsList.add(genNew1(hours));
+//        newsList.add(genNew2(hours));
+//        newsList.add(genNew3(hours));
+//        newsList.add(genNew4(hours));
+//        newsList.add(genNew5(hours));
+//        newsList.add(genNew6(hours));
         newsList.add(genNew7(hours));
-        newsList.add(genNew8(hours));
-        newsList.add(genNew9(hours));
+//        newsList.add(genNew8(hours));
+//        newsList.add(genNew9(hours));
 
         return newsList;
     }
