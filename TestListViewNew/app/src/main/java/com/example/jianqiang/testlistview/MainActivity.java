@@ -3,16 +3,15 @@ package com.example.jianqiang.testlistview;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.pulltorefresh.PullToRefreshBase;
 import com.example.jianqiang.testlistview.pulltorefresh.PullToRefreshListView;
 import com.example.jianqiang.testlistview.utils.Utils;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends RxAppCompatActivity
 {
     MyListView listView;
     MyAdapter adapter;
@@ -37,14 +36,14 @@ public class MainActivity extends AppCompatActivity
         mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.pull_refresh_list);
         mPullRefreshListView.setMode(PullToRefreshBase.Mode.PULL_FROM_END);
 
-        mPullRefreshListView.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener2<ListView>() {
+        mPullRefreshListView.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener2<MyListView>() {
             @Override
-            public void onPullDownToRefresh(PullToRefreshBase<ListView> refreshView) {
+            public void onPullDownToRefresh(PullToRefreshBase<MyListView> refreshView) {
 
             }
 
             @Override
-            public void onPullUpToRefresh(PullToRefreshBase<ListView> refreshView) {
+            public void onPullUpToRefresh(PullToRefreshBase<MyListView> refreshView) {
 
 
                 handler.postDelayed(new Runnable() {
@@ -56,7 +55,7 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
-
+        mPullRefreshListView.getListView().setRxAppCompatActivity(this);
         adapter = new MyAdapter(this, Utils.generateLoadData(10),null,mPullRefreshListView.getListView());
 
         adapter.setOnListItemClickedListener(new MyAdapter.OnListItemClickedListener()

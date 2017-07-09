@@ -1,6 +1,5 @@
 package com.example.jianqiang.testlistview;
 
-import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,22 +12,23 @@ import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
 import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.helpers.DefaultItemViewFactory;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import java.util.List;
 
 public class MyAdapter extends BaseAdapter implements ListAdapterAware {
     private List<News> newsList;
-    private Activity context;
+    private RxAppCompatActivity context;
     private ItemViewFactoryAware<News> itemViewFactory;
     private boolean isScrolling;
     private ListView mMyListView;
     private OnListItemClickedListener mOnListItemClickedListener;
 
-    public MyAdapter(Activity context, List<News> newsList) {
+    public MyAdapter(RxAppCompatActivity context, List<News> newsList) {
         this(context, newsList, null, null);
     }
 
-    public MyAdapter(Activity context, List<News> newsList, ItemViewFactoryAware<News> itemViewFactory, ListView listView) {
+    public MyAdapter(RxAppCompatActivity context, List<News> newsList, ItemViewFactoryAware<News> itemViewFactory, ListView listView) {
         super();
 
         this.newsList = newsList;
@@ -91,7 +91,7 @@ public class MyAdapter extends BaseAdapter implements ListAdapterAware {
         });
 
         if ((convertView instanceof ItemViewAware) && !isScrolling) {
-            ((ItemViewAware) convertView).triggerNetworkJob(this, position);
+            ((ItemViewAware) convertView).triggerNetworkJob(this, position,context);
         }
 
 
