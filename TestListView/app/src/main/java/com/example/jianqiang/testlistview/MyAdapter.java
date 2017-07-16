@@ -1,7 +1,9 @@
 package com.example.jianqiang.testlistview;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.List;
+
 
 public class MyAdapter extends BaseAdapter {
     private final List<News> newsList;
@@ -65,7 +68,11 @@ public class MyAdapter extends BaseAdapter {
             holder.llComments = (LinearLayout) convertView
                     .findViewById(R.id.llComments);
             holder.llPrefer = (LinearLayout) convertView.findViewById(R.id.llPrefer);
-
+            holder.llPrefer = (LinearLayout) convertView.findViewById(R.id.llPrefer);
+            holder.llNineGrid = (NineImageView) convertView.findViewById(R.id.nineview);
+            holder.ivArticle = (ImageView) convertView.findViewById(R.id.imgarticle);
+            holder.tvArticle = (TextView) convertView.findViewById(R.id.tvarticle);
+            holder.llArticle = (LinearLayout) convertView.findViewById(R.id.llarticle);
             convertView.setTag(holder);
         } else {
             holder = (Holder) convertView.getTag();
@@ -75,9 +82,45 @@ public class MyAdapter extends BaseAdapter {
         holder.tvAuthor.setText(news.author);
         holder.tvContent.setText(news.content);
         holder.tvTime.setText(news.showtime);
+        holder.imgAvator.setBackgroundResource(R.mipmap.default_image);
         holder.imgAvator.setImageURI(Uri.parse(news.avator));
-
-      
+//        ImageLoader
+//                .getInstance()
+//                .loadImage(
+//                        MyApp.getApp(),
+//                        GlideImageConfig
+//                                .builder()
+//                                .url(news.avator)
+//                                .placeholder(R.mipmap.ic_launcher)
+//                                .imageView(holder.imgAvator)
+//                                .build());
+        if (news.imageList!=null) {
+            holder.llNineGrid.setVisibility(View.VISIBLE);
+            holder.llNineGrid.setList(news.imageList);
+        }else {
+            holder.llArticle.setVisibility(View.GONE);
+        }
+        //资讯
+        final Article article = news.article;
+        Log.d("TAG","lip "+position+"==="+article);
+        if (article!=null) {
+            holder.llArticle.setVisibility(View.VISIBLE);
+            holder.ivArticle.setBackgroundResource(R.drawable.zan);
+            holder.ivArticle.setImageURI(Uri.parse(article.imageUrl));
+            holder.tvArticle.setText(article.title);
+            holder.llArticle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent();
+                    intent.setAction("android.intent.action.VIEW");
+                    Uri url = Uri.parse(article.articleUrl);
+                    intent.setData(url);
+                    context.startActivity(intent);
+                }
+            });
+        }else {
+            holder.llArticle.setVisibility(View.GONE);
+        }
         //点赞
         if (news.preferList != null) {
             holder.llPrefer.setVisibility(View.VISIBLE);
@@ -120,5 +163,9 @@ public class MyAdapter extends BaseAdapter {
 
         LinearLayout llComments;
         LinearLayout llPrefer;
+        NineImageView llNineGrid;
+        ImageView ivArticle;
+        TextView tvArticle;
+        LinearLayout llArticle;
     }
 }
