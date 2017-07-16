@@ -1,17 +1,21 @@
 package com.example.jianqiang.testlistview;
 
 import android.app.Application;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.ListView;
+import android.content.Context;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 
 public class MyApp extends Application {
+    private static Context sApp;
+
+    public static Context getApp() {
+        return sApp;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
-
+        sApp =this;
         Fresco.initialize(this);
     }
 }
