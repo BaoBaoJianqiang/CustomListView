@@ -107,9 +107,9 @@ public class MyView1 extends View implements ItemViewAware<News> {
             @Override
             public void onSuccess(Bitmap bitmap) {
                 avatorImg = bitmap;
-//                currentTag = 0;
+                currentTag = 0;
                 mAvtorPonint = mAvtorPoints.get(0);
-//                postInvalidate();
+                postInvalidate();
             }
 
             @Override
@@ -125,9 +125,9 @@ public class MyView1 extends View implements ItemViewAware<News> {
                 @Override
                 public void onSuccess(Bitmap bitmap) {
                     articleImg = bitmap;
-//                    currentTag = 1;
-//                    mArticlePoint = mNewsPoints.get(0);
-//                    postInvalidate();
+                    currentTag = 1;
+                    mArticlePoint = mNewsPoints.get(0);
+                    postInvalidate();
 
                 }
 
