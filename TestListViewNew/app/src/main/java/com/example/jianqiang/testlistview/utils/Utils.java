@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextPaint;
+import android.util.Base64;
 
 import com.example.jianqiang.testlistview.entitiy.ImageEntity;
 import com.example.jianqiang.testlistview.entitiy.Article;
@@ -12,10 +13,13 @@ import com.example.jianqiang.testlistview.entitiy.Comment;
 import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Utils {
+    private static String server = "http://177z140e88.iask.in:29223";
+
     public static List<News> generateData() {
         List<News> newsList = new ArrayList<News>();
 
@@ -46,7 +50,29 @@ public class Utils {
         newsList.add(genNew8(hours));
         newsList.add(genNew9(hours));
 
+        //把图片地址修改为ImageServer，如果不用网络图片，请注释之
+        for(int i = 0 ; i < newsList.size(); i++) {
+            News item = newsList.get(i);
+
+            if(item.imageList != null) {
+                for(int j = 0 ; j < item.imageList.size(); j++) {
+                    item.imageList.get(j).smallImageUrl = getEncodeURL(item.imageList.get(j).smallImageUrl, 150, 150, 70);
+                }
+            }
+
+            item.avator = getEncodeURL(item.avator, 60, 60, 70);
+
+            if(item.article != null) {
+                item.article.imageUrl = getEncodeURL(item.article.imageUrl, 60, 60, 70);
+            }
+        }
+
         return newsList;
+    }
+
+    static String getEncodeURL(String imageURL, int width, int height, int quality) {
+        String base64Token = Base64.encodeToString(imageURL.getBytes(), Base64.DEFAULT);//  编码后
+        return MessageFormat.format("{0}/img?width={1}&height={2}&quality={3}&url={4}", server , width, height, quality, base64Token);
     }
 
     /**
