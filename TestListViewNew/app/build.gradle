@@ -33,10 +33,15 @@ dependencies {
 
     compile 'com.facebook.fresco:fresco:0.9.0+'
     //rxjava
-    compile  'io.reactivex:rxandroid:1.2.1'
-    compile  'io.reactivex:rxjava:1.2.1'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+// Because RxAndroid releases are few and far between, it is recommended you also
+// explicitly depend on RxJava's latest version for bug fixes and new features.
+    compile 'io.reactivex.rxjava2:rxjava:2.1.0'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
-    compile   'com.trello:rxlifecycle:1.0'
-    // If you want pre-written Activities and Fragments you can subclass as providers
-    compile   'com.trello:rxlifecycle-components:1.0'
+
+    compile 'com.trello.rxlifecycle2:rxlifecycle:2.1.0'
+
+// If you want pre-written Activities and Fragments you can subclass as providers
+    compile 'com.trello.rxlifecycle2:rxlifecycle-components:2.1.0'
+
 }
