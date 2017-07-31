@@ -33,19 +33,23 @@ import com.example.jianqiang.testlistview.helpers.ZanContentHelper;
 import com.example.jianqiang.testlistview.utils.DownloadUtils;
 import com.example.jianqiang.testlistview.utils.FrescoUtils;
 import com.example.jianqiang.testlistview.utils.Utils;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
+
+import org.reactivestreams.Publisher;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
-import rx.functions.Func2;
-import rx.schedulers.Schedulers;
+import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 import static com.example.jianqiang.testlistview.utils.Utils.smartDrawText;
 
@@ -70,6 +74,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
     //行间距
     int cellMargin = 20;
     private int count;
+    Flowable<Bitmap> bitmapFlowable;
 
     public MyView1(Context context) {
         super(context);
@@ -146,49 +151,40 @@ public class MyView1 extends View implements ItemViewAware<News> {
         }
 
         //获取图片列表
-
-        //获取图片列表
         if (news.imageList != null) {
-            Observable.from(news.imageList)
-                    .flatMap(new Func1<ImageEntity, Observable<ImageBean>>() {
-
+            Flowable.fromIterable(news.imageList)
+                    .flatMap(new Function<ImageEntity, Publisher<ImageBean>>() {
                         @Override
-                        public Observable<ImageBean> call(ImageEntity imageEntity) {
-
-                            Observable<ImageEntity> imageEntityObservable = Observable.just(imageEntity);
+                        public Publisher<ImageBean> apply(@NonNull ImageEntity imageEntities) throws Exception {
                             DownloadUtils downloadUtils = new DownloadUtils();
-                            Observable<Bitmap> fileObservable = downloadUtils.downloadIamge(imageEntity.smallImageUrl);
-                            return Observable.zip(imageEntityObservable, fileObservable, new Func2<ImageEntity, Bitmap, ImageBean>() {
+                            bitmapFlowable = downloadUtils.downLoadImageFlowable(imageEntities.smallImageUrl);
+                            Publisher<ImageEntity> imageEntityFlowable = Flowable.just(imageEntities);
+                            return Flowable.zip(imageEntityFlowable, bitmapFlowable, new BiFunction<ImageEntity, Bitmap, ImageBean>() {
                                 @Override
-                                public ImageBean call(ImageEntity imageEntity, Bitmap bitmap) {
+                                public ImageBean apply(@NonNull ImageEntity imageEntity, @NonNull Bitmap bitmap) throws Exception {
                                     return new ImageBean(imageEntity.smallImageUrl, bitmap);
                                 }
                             });
                         }
-                    }).subscribeOn(Schedulers.io())
+
+                    })
+                    .subscribeOn(Schedulers.io())
                     .compose(context.<ImageBean>bindToLifecycle())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<ImageBean>() {
+                    .doOnComplete(new Action() {
                         @Override
-                        public void onCompleted() {
-                            System.out.println("lip onCompleted");
+                        public void run() throws Exception {
+                            Log.d("TAG","lip RUN>>>>>>>>>");
                             postInvalidate();
                         }
-
+                    })
+                    .subscribe(new Consumer<ImageBean>() {
                         @Override
-                        public void onError(Throwable e) {
-
-                        }
-
-                        @Override
-                        public void onNext(ImageBean imageBean) {
-                            //                                    listImg.put(imageBean,imageBean.bitmap);
+                        public void accept(@NonNull ImageBean imageBean) throws Exception {
                             mBitmapMap.put(imageBean.getTag(), imageBean.getBitmap());
-                            System.out.println("lip onNext"+imageBean);
-
+                            Log.d("TAG","lip accept>>>>>>>>>");
                         }
                     });
-
         }
 
 
@@ -371,7 +367,7 @@ public class MyView1 extends View implements ItemViewAware<News> {
             paint.setColor(Color.RED);// 设置灰色
             paint.setStyle(Paint.Style.FILL);//设置填满
             //TODO 画上矩形之后，位置会向偏移，未找到原因
-//            canvas.drawRect(leftMargin, startY, contentWidth, articleHeight, paint);// 长方形
+            //            canvas.drawRect(leftMargin, startY, contentWidth, articleHeight, paint);// 长方形
             viewCoordinateHelper.setArticleRect(leftMargin, startY, contentWidth, mBuilder.getArticleHeight());
             if (articleImg != null) {
                 canvas.drawBitmap(articleImg, leftMargin, startY, paint);
@@ -382,7 +378,9 @@ public class MyView1 extends View implements ItemViewAware<News> {
             paint.setTextSize(mBuilder.getArticleFontSize());
             paint.setColor(Color.BLACK);//
             smartDrawText(canvas, textPaint, news.article.title, contentWidth, leftMargin + avatorImg.getWidth() + mBuilder.getLineMargin(), startY);
-            startY += articleImg.getHeight() + mBuilder.getLineMargin();
+            if (articleImg!=null) {
+                startY += articleImg.getHeight() + mBuilder.getLineMargin();
+            }
         }
 
         //图片列表

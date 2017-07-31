@@ -5,13 +5,19 @@ import android.graphics.Bitmap;
 
 import java.io.IOException;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.annotations.NonNull;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import rx.Observable;
-import rx.Subscriber;
 
 
 public class DownloadUtils {
@@ -22,13 +28,48 @@ public class DownloadUtils {
         mOkHttpClient = new OkHttpClient();
     }
 
-    public Observable<Bitmap> downloadIamge(final String path) {
+    public Flowable<Bitmap> downLoadImageFlowable(final String path) {
+        return  Flowable.create(new FlowableOnSubscribe<Bitmap>() {
 
-        return Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
-            public void call(final Subscriber<? super Bitmap> subscriber) {
+            public void subscribe(@NonNull final FlowableEmitter<Bitmap> subscriber) throws Exception {
 
-                if (!subscriber.isUnsubscribed()) {
+                final Request request = new Request.Builder().url(path).build();
+                mOkHttpClient.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        if (response.isSuccessful()) {
+                            Bitmap bitmap = DecodeUtils.doParse(response);
+                            if (bitmap != null) {
+                                System.out.println("lip onResponse "+bitmap);
+                                subscriber.onNext(bitmap);
+
+                            }
+
+                        }
+                        System.out.println("lip onComplete ");
+                        subscriber.onComplete();
+                    }
+                });
+
+            }
+
+
+        },BackpressureStrategy.BUFFER);
+    }
+
+
+    public Observable<Bitmap> downLoadImageObservable(final String path) {
+        return Observable.create(new ObservableOnSubscribe<Bitmap>() {
+            @Override
+            public void subscribe(@NonNull final ObservableEmitter<Bitmap> subscriber) throws Exception {
+
+                if (!subscriber.isDisposed()) {
 
                     final Request request = new Request.Builder().url(path).build();
                     mOkHttpClient.newCall(request).enqueue(new Callback() {
@@ -44,33 +85,14 @@ public class DownloadUtils {
                                 if (bitmap!=null) {
                                     subscriber.onNext(bitmap);
                                 }
-//                                    File file = FileUtils.getFile(data, Environment.getExternalStorageDirectory().getPath(),  "temp.jpg");
-//                                    Luban.with(MyApp.getApp()).load(file).setCompressListener(new OnCompressListener() {
-//                                        @Override
-//                                        public void onStart() {
-//                                            subscriber.onStart();
-//                                        }
-//
-//                                        @Override
-//                                        public void onSuccess(File file) {
-
-//                                        }
-//
-//                                        @Override
-//                                        public void onError(Throwable e) {
-//                                            subscriber.onError(e);
-//                                        }
-//                                    }).get();
-
-//                                }
                             }
-                            subscriber.onCompleted();
+                           subscriber.onComplete();
                         }
                     });
                 }
             }
         });
-    }
 
+    }
 
 }
