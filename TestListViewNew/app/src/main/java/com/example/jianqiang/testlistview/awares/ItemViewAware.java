@@ -1,7 +1,7 @@
 package com.example.jianqiang.testlistview.awares;
 
 import com.example.jianqiang.testlistview.helpers.ItemViewLayoutConfig;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 public interface ItemViewAware<T>
 {

@@ -26,4 +26,12 @@ public  class ImageBean {
     public void setTag(Object tag) {
         this.tag = tag;
     }
+
+    @Override
+    public String toString() {
+        return "ImageBean{" +
+                "tag=" + tag +
+                ", bitmap=" + bitmap +
+                '}';
+    }
 }

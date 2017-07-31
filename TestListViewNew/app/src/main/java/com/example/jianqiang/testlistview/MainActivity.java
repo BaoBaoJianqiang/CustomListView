@@ -9,7 +9,13 @@ import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.pulltorefresh.PullToRefreshBase;
 import com.example.jianqiang.testlistview.pulltorefresh.PullToRefreshListView;
 import com.example.jianqiang.testlistview.utils.Utils;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
+
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.annotations.NonNull;
 
 public class MainActivity extends RxAppCompatActivity
 {
@@ -35,7 +41,6 @@ public class MainActivity extends RxAppCompatActivity
 
         mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.pull_refresh_list);
         mPullRefreshListView.setMode(PullToRefreshBase.Mode.PULL_FROM_END);
-
         mPullRefreshListView.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener2<MyListView>() {
             @Override
             public void onPullDownToRefresh(PullToRefreshBase<MyListView> refreshView) {
@@ -67,5 +72,41 @@ public class MainActivity extends RxAppCompatActivity
             }
         });
         mPullRefreshListView.setAdapter(adapter);
+
+//        downloadIamgde("fdf")
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribeOn(Schedulers.io())
+//                .compose(this.<String>bindToLifecycle())
+//                .doOnComplete(new Action() {
+//                    @Override
+//                    public void run() throws Exception {
+//                        Log.d("MAIN","lip run----->");
+//                    }
+//                })
+//                .subscribe(new Consumer<String>() {
+//                    @Override
+//                    public void accept(@NonNull String s) throws Exception {
+//                        Log.d("MAIN","lip accept----->"+s);
+//                    }
+//                });
     }
+
+
+
+    public Flowable<String> downloadIamgde(final String path) {
+        return  Flowable.create(new FlowableOnSubscribe<String>() {
+
+
+            @Override
+            public void subscribe(@NonNull final FlowableEmitter<String> subscriber) throws Exception {
+                for (int i=0;i<139;i++) {
+                    subscriber.onNext("JKJFLDJFKDJ" + path+i);
+                }
+                subscriber.onComplete();
+            }
+
+
+        }, BackpressureStrategy.BUFFER);
+    }
+
 }

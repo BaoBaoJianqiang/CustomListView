@@ -12,7 +12,7 @@ import com.example.jianqiang.testlistview.awares.ListAdapterAware;
 import com.example.jianqiang.testlistview.awares.OnItemViewClickedListener;
 import com.example.jianqiang.testlistview.entitiy.News;
 import com.example.jianqiang.testlistview.helpers.DefaultItemViewFactory;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 import java.util.List;
 

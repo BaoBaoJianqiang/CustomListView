@@ -9,12 +9,12 @@ import android.widget.ListView;
 
 import com.example.jianqiang.testlistview.awares.ItemViewAware;
 import com.example.jianqiang.testlistview.awares.ListAdapterAware;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 
 public class MyListView extends ListView
 {
-    private  RxAppCompatActivity mRxAppCompatActivity;
+    private RxAppCompatActivity mRxAppCompatActivity;
     private SparseArray<View> mArrayList;
 
 
